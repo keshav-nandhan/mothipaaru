@@ -1,12 +1,17 @@
 import React, { Component } from 'react'
 
-class headernav extends Component {
+class Headernav extends Component {
     render() {
         return (
             <div>
-                <span>This is header</span>
+                <ul>
+                    <li><a className="active" href="#home">Home</a></li>
+                    <li><a href="#news">Profile</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
             </div>
         )
     }
 }
-export default headernav;
+export default Headernav;

@@ -1,13 +1,17 @@
 import React, { Component } from 'react'
+import Headernav from './headernav'
+import Titlebar from './titlebar'
 
-  class homepage extends Component {
+  class Homepage extends Component {
     render() {
         return (
             <div>
+                <Titlebar/>
+                <Headernav/>
                 <span>This is home page</span>
-                <headernav/>
+                
             </div>
         )
     }
 }
-export default homepage;
+export default Homepage;
