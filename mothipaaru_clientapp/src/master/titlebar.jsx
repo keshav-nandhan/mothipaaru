@@ -7,23 +7,13 @@ import Col from 'react-bootstrap/Col'
     render() {
         return (
             <Container>
-  <Row className="justify-content-md-center">
-    <Col xs lg="2">
-      Title
-    </Col>
-    <Col md="auto">Variable width content</Col>
-    <Col xs lg="2">
-      3 of 3
-    </Col>
-  </Row>
-  <Row>
-    <Col>1 of 3</Col>
-    <Col md="auto"></Col>
-    <Col xs lg="2">
-     Login
-    </Col>
-  </Row>
-</Container>
+            <Row>
+              <Col xs={6}>1</Col><Col xs={6}>2</Col>
+            </Row>
+            <Row>
+              2
+            </Row>
+          </Container>
 
 
         )
