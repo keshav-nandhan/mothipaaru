@@ -6,15 +6,14 @@ import Col from 'react-bootstrap/Col'
  class Titlebar extends Component {
     render() {
         return (
+          <div className="titlebar">
             <Container>
             <Row>
-              <Col xs={6}>1</Col><Col xs={6}>2</Col>
-            </Row>
-            <Row>
-              2
+              <Col md={6}><p>Dummy Titile</p></Col>
+              <Col md={{ span: 4, offset: 2 }}>Register</Col>
             </Row>
           </Container>
-
+          </div>
 
         )
     }
