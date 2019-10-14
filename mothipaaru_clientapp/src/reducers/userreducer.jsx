@@ -38,4 +38,4 @@ function usersList({ firebase, users }) {
     }))
   )
   
-  export default registerUser_Reducer(usersList)
+  export default registerUser_Reducer(usersList);

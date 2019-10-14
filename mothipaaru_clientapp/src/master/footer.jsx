@@ -44,11 +44,11 @@ class Footer extends Component {
          <span>About the company</span>
          Ready to Accept the Challenge</p>
      <div className="footer-icons">
-         <a href="#"><i className="fa fa-facebook"></i></a>
-         <a href="#"><i className="fa fa-twitter"></i></a>
-         <a href="#"><i className="fa fa-instagram"></i></a>
-         <a href="#"><i className="fa fa-linkedin"></i></a>
-         <a href="#"><i className="fa fa-youtube"></i></a>
+         <a><i className="fa fa-facebook"></i></a>
+         <a><i className="fa fa-twitter"></i></a>
+         <a><i className="fa fa-instagram"></i></a>
+         <a><i className="fa fa-linkedin"></i></a>
+         <a><i className="fa fa-youtube"></i></a>
      </div>
  </div>
 </footer>
