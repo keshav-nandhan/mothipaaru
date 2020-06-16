@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "mothi-paaru": {
+      "hosting": {
+        "mothipaaru": [
+          "mothi-paaru"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "mothi-paaru"
+  }
+}

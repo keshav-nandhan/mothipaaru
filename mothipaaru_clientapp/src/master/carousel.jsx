@@ -1,14 +1,16 @@
 import React, { Component } from 'react'
 import Carousel from 'react-bootstrap/Carousel'
+import Container from 'react-bootstrap/Container'
 
 class Carouselcomponent extends Component {
       render(){
-          return(<div className="Container fluid"><Carousel>
+          return(
+            <div>
+          <Container><Carousel>
           <Carousel.Item className="carousel-box">
             <img
               className="d-block w-100" src="https://images.pexels.com/photos/978695/pexels-photo-978695.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
-              alt="First slide"
-            />
+              alt="First slide"/>
             <Carousel.Caption>
               <h3>First slide label</h3>
               <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
@@ -38,7 +40,10 @@ class Carouselcomponent extends Component {
               <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
             </Carousel.Caption>
           </Carousel.Item>
-        </Carousel></div>)
+        </Carousel>
+        </Container>
+        </div>
+        )
         }
    
 }
