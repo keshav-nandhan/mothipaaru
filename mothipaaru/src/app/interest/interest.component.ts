@@ -34,10 +34,8 @@ export class InterestComponent implements OnInit {
       descground:['']
     })
   }
-
   submitForm(){
     this.matchfinders=this.serviceobj.matchfinder(this.myForm.value);
-    this.matchfinders.subscribe(res=>console.log(res));
     //this.router.navigate(['/tasks']);
   }
 

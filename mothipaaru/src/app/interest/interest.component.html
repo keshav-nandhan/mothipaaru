@@ -70,11 +70,11 @@
 
 <div class="col-md-5" *ngIf="(matchfinders | async)?.length;else warning">
   <div class="customWidth" *ngFor="let obj of matchfinders | async">
-    <div class="card text-white mb-3">
-      <div class="card-header cardTitle">{{obj.displayName}}
-        <button type="button" class=" pull-right close" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+    <div class="card bg-info text-white mb-3">
+      <div class="card-header">{{obj.displayName}}
+        <span class="text-right">
+          <img src="{{obj.photoURL}}" class="profileimg rounded" alt="...">
+        </span>
       </div>
       <div class="card-body bodyCustom">
         <p class="card-title">{{obj.email}}</p>

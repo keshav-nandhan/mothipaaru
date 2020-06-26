@@ -1,8 +1,11 @@
 export interface userDetails{
-    uid:string,
+    uid?:string,
     gender:string,
-    contactnumber:string,
+    phonenumber:string,
     favouritesport:string,
     citylocation:string,
     descground:string
+    imageurl:string,
+    mailaddress:string,
+    username:string
 }

@@ -1,8 +1,12 @@
 .limiter {
     width: 100%;
     margin: 0 auto;
+    position: relative;
 }
-.container-login100 {
+.limiter .container-login100 {
+    position: absolute; /* Position the background text */
+    bottom: 0; /* At the bottom. Use top:0 to append it to the top */
+    color: #f1f1f1; /* Grey text */
     width: 100%;
     min-height: 100vh;
     display: flex;
