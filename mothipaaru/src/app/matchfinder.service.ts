@@ -7,68 +7,62 @@ import {map, switchMap} from 'rxjs/operators';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { firestore } from 'firebase';
 import { AuthService } from './auth.service';
+import { QueryValueType } from '@angular/compiler/src/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MatchfinderService {
- userlist:AngularFirestoreCollection<users>;
+  
+ userlist:Observable<userDetails[]>;
+ userlistdoc:AngularFirestoreCollection<users>;
  userDetailSearch:Observable<userDetails[]>;
  userDetails:AngularFirestoreCollection<userDetails>;
- userLoggedIn:any;
+ userLoggedIn:users;
  matchedusers:Observable<users[]>;
   
  
   constructor(private readonly af:AngularFirestore,private afAuth: AngularFireAuth,private authser:AuthService) { 
     
-    this.userLoggedIn=this.afAuth.authState.pipe(switchMap(user=>{
-      if(user){
-        return this.afAuth.currentUser;
-      }
-      else{
-        return null;
-      }
-    }))
-   
     this.authser.userobs.subscribe(data=>{
-      this.userDetails=this.af.doc(`Users/${data.uid.toString()}`).collection<userDetails>('sportsdetails');
+    this.userLoggedIn=data;
+    this.userDetails=this.af.collection<userDetails>('register_team');
+    this.userlistdoc=this.af.collection<users>('Users');
       
-    this.userDetailSearch=this.userDetails.snapshotChanges().pipe(map(actions => {return actions.map(a =>{
-      const docdata  = a.payload.doc.data() as userDetails;
-      docdata.uid = a.payload.doc.id;
-      return docdata;
-    })
-  })
-    );
   });
-    
-  }
+}
+addnotification(requestuser: any) {
+  throw new Error("Method not implemented.");
+}
 
   matchfinder(useritem){
-    
-
     this.authser.userobs.subscribe(data=>{
-    this.userDetails.snapshotChanges().pipe(map(actions => {return actions.map(a =>{
-      this.userDetails.doc(a.payload.doc.id).set({ completed: true }, { merge: true });
-    })
-  })
-    );
-  });
-    console.log(this.userDetailSearch);
-    //this.userDetails.add(useritem);
+      this.userLoggedIn=data;});
 
-    //this.userDetails.doc('').set({ completed: true }, { merge: true });
-    this.matchedusers=this.af.collection<users>('Users').snapshotChanges().pipe(map(fn=>{
-      return fn.map(a=>{
-        const usermatch = a.payload.doc.data() as users;
-        usermatch.uid = a.payload.doc.id;
-        return usermatch;
-      })
-      })
-      );
-  
-  return this.matchedusers;
-  }
+      const userref:userDetails={
+        uid:this.userLoggedIn.uid,
+        dateupdated:Date.now().toString(),
+        gender:useritem.gender,
+        phonenumber:useritem.phonenumber,
+        favouritesport:useritem.favouritesport,
+        citylocation:useritem.citylocation,
+        descground:useritem.descground,
+        imageurl:this.userLoggedIn.photoURL,
+        mailaddress:this.userLoggedIn.email,
+        username:this.userLoggedIn.displayName
+      };
+      this.userDetails.doc(this.userLoggedIn.uid).set(userref,{ merge: true });
+  // return userref.set(data,{merge:true});
+    const arr=<userDetails[]>[];
+    this.userlist=this.af.collection<userDetails>("register_team",ref=>ref.where('gender','==',useritem.gender).where('citylocation','==',useritem.citylocation).where('favouritesport','==',useritem.favouritesport).orderBy('uid')).valueChanges();
+    this.userlist.subscribe(actions=>{
+      actions.map(data=>{
+      if(data["uid"]!=this.userLoggedIn.uid)
+      arr.push(data)
+    });
+    })
+    console.log(arr);
+    return arr;
 
     //('sportsdetails',ref => ref.where('gender','==', useritem.gender)).snapshotChanges();
     // const queryObservable = new Subject<string>().switchMap(geneder => 
@@ -76,4 +70,6 @@ export class MatchfinderService {
     //   );
     
     //return this.userDetails.ref.where('gender','==',useritem.gender);
+}
+
 }

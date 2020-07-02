@@ -15,6 +15,16 @@
 .card-header {
     width:100%;
     padding: .25rem 2rem;
+    color: #000;
+}
+.profileimg{
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
 }
 .titleCustom{
     vertical-align: middle;

@@ -25,6 +25,10 @@ export class InterestComponent implements OnInit {
     this.cityselected=this.countrystatecities[stateValue].Cities;
   }
   
+  Confirmmatch(){
+
+  }
+
   reactiveForm() {
     this.myForm = this.fb.group({
       phonenumber:['',[Validators.required]],
@@ -34,11 +38,12 @@ export class InterestComponent implements OnInit {
       descground:['']
     })
   }
-
   submitForm(){
     this.matchfinders=this.serviceobj.matchfinder(this.myForm.value);
-    this.matchfinders.subscribe(res=>console.log(res));
     //this.router.navigate(['/tasks']);
+  }
+  ConfirmMatch(requestuser){
+    this.serviceobj.addnotification(requestuser);
   }
 
 
