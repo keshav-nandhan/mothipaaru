@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { MatchfinderService } from '../matchfinder.service';
+import { Router } from '@angular/router';
+import { matchdetails } from '../notification.model';
+import { async } from '@angular/core/testing';
 
 @Component({
   selector: 'app-notification',
@@ -7,9 +11,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class NotificationComponent implements OnInit {
 
-  constructor() { }
-
-  ngOnInit(): void {
+  constructor(private serviceobj:MatchfinderService,private router:Router) { }
+notifications:matchdetails;
+  Confirmnotifications:any=[];
+ngOnInit(): void {
+    var notificationmaster=this.serviceobj.showNotifications();
+    notificationmaster[0].subscribe(data=>{});
+    notificationmaster[1].subscribe(data=>{this.Confirmnotifications=data});
   }
 
 }

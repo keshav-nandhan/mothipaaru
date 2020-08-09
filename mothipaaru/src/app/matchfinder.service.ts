@@ -5,39 +5,57 @@ import {userDetails} from './userdetails.model';
 import {Observable, of, Subject} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { firestore } from 'firebase';
 import { AuthService } from './auth.service';
-import { QueryValueType } from '@angular/compiler/src/core';
+import { matchdetails } from './notification.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MatchfinderService {
+ 
   
  userlist:Observable<userDetails[]>;
  userlistdoc:AngularFirestoreCollection<users>;
- userDetailSearch:Observable<userDetails[]>;
  userDetails:AngularFirestoreCollection<userDetails>;
  userLoggedIn:users;
- matchedusers:Observable<users[]>;
-  
+ registermatch:matchdetails;
+notificationdetail: AngularFirestoreCollection<matchdetails>;
  
   constructor(private readonly af:AngularFirestore,private afAuth: AngularFireAuth,private authser:AuthService) { 
     
     this.authser.userobs.subscribe(data=>{
     this.userLoggedIn=data;
+    });
     this.userDetails=this.af.collection<userDetails>('register_team');
     this.userlistdoc=this.af.collection<users>('Users');
-      
-  });
+    this.notificationdetail=this.af.collection<matchdetails>('register_match');
+
 }
-addnotification(requestuser: any) {
-  throw new Error("Method not implemented.");
+addnotification(matchrequested) {
+this.registermatch=<matchdetails>{
+  Sport:matchrequested.favouritesport,
+  location:matchrequested.citylocation,
+  comments:matchrequested.descground,
+  confirmed:'false',
+  matchrequestedagainst:matchrequested.uid,
+  matchrequestedby:this.userLoggedIn.uid,
+  dateupdated:Date.now().toString()
+}
+this.notificationdetail.add(this.registermatch);
+}
+
+
+
+showNotifications() {
+  var currentuserid=this.userLoggedIn.uid.toString();
+var matchesdeclaredagainst=this.af.collection<matchdetails>('register_match',ref=>ref.where('matchrequestedagainst','==',currentuserid)).valueChanges();
+    var matchesconfirmed=this.af.collection<matchdetails>('register_match',ref=>ref.where('matchrequestedby','==',currentuserid)).valueChanges();
+  
+  return [matchesdeclaredagainst,matchesconfirmed];
+
 }
 
   matchfinder(useritem){
-    this.authser.userobs.subscribe(data=>{
-      this.userLoggedIn=data;});
 
       const userref:userDetails={
         uid:this.userLoggedIn.uid,
@@ -64,12 +82,6 @@ addnotification(requestuser: any) {
     console.log(arr);
     return arr;
 
-    //('sportsdetails',ref => ref.where('gender','==', useritem.gender)).snapshotChanges();
-    // const queryObservable = new Subject<string>().switchMap(geneder => 
-    //   this.af.doc(`Users/${data.uid.toString()}`).collection("sportsdetails",ref => ref.where("gener", "==", useritem.gender)).valueChanges()
-    //   );
-    
-    //return this.userDetails.ref.where('gender','==',useritem.gender);
 }
 
 }

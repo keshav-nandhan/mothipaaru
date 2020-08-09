@@ -1,4 +1,4 @@
-import { Component, OnInit, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { MatchfinderService } from '../matchfinder.service';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ export class InterestComponent implements OnInit {
   constructor(private fb:FormBuilder,private serviceobj:MatchfinderService,private router:Router) { 
 
   }
-  matchfinders:any;
+  matchfinders:any[];
   cityselected:any[];
   myForm: FormGroup;
 
@@ -40,10 +40,12 @@ export class InterestComponent implements OnInit {
   }
   submitForm(){
     this.matchfinders=this.serviceobj.matchfinder(this.myForm.value);
+    this.myForm.reset();
     //this.router.navigate(['/tasks']);
   }
   ConfirmMatch(requestuser){
     this.serviceobj.addnotification(requestuser);
+    this.matchfinders = this.matchfinders.filter(obj => obj !== requestuser);
   }
 
 

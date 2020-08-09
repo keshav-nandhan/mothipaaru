@@ -35,3 +35,53 @@ text-transform: capitalize;
 .searchbutton {
 right: 15px;
 }
+
+
+.acmodal__overlay .acmodal__modal .acmodal__modal__actions .acmodal__button.acmodal__button__primary {
+    background-color: #343434;
+    color: #fff;
+}
+
+.acmodal__overlay .acmodal__modal .acmodal__modal__actions .acmodal__button {
+    padding: .5rem .8rem;
+    border: 2px solid #343434;
+    font-size: 1rem;
+    border-radius: 5px;
+    color: #343434;
+    margin: 0 .5rem;
+    transition: .2s;
+}
+
+.acmodal__button {
+    text-rendering: auto;
+    color: -internal-light-dark-color(buttontext, rgb(170, 170, 170));
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    text-align: center;
+    align-items: flex-start;
+    background-color: -internal-light-dark-color(rgb(239, 239, 239), rgb(74, 74, 74));
+    box-sizing: border-box;
+    margin: 0em;
+    padding: 1px 6px;
+    border-width: 2px;
+    border-style: outset;
+    border-color: -internal-light-dark-color(rgb(118, 118, 118), rgb(195, 195, 195));
+    border-image: initial;
+}
+
+.acmodal__overlay .acmodal__modal .acmodal__modal__actions {
+    text-align: right;
+}
+
+.acmodal__overlay .acmodal__modal .acmodal__modal__title, .acmodal__overlay .acmodal__modal .acmodal__modal__message, .acmodal__overlay .acmodal__modal .acmodal__modal__actions {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 1rem;
+    box-sizing: border-box;
+    color: #343434;
+}

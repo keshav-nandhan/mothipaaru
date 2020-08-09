@@ -1,5 +1,6 @@
 export interface userDetails{
-    uid?:string,
+    uid:string,
+    dateupdated:string,
     gender:string,
     phonenumber:string,
     favouritesport:string,

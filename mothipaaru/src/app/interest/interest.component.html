@@ -68,18 +68,19 @@
 
 </div>
 
-<div class="col-md-5" *ngIf="(matchfinders | async)?.length;else warning">
-  <div class="customWidth" *ngFor="let obj of matchfinders | async">
+<div class="col-md-5" *ngIf="matchfinders?.length;else warning">
+  <div class="customWidth" *ngFor="let obj of matchfinders">
     <div class="card bg-info text-white mb-3">
-      <div class="card-header">{{obj.displayName}}
+      <div class="card-header">{{obj.username}}
         <span class="text-right">
-          <img src="{{obj.photoURL}}" class="profileimg rounded" alt="...">
+          <img src="{{obj.imageurl}}" class="profileimg rounded" alt="...">
         </span>
       </div>
       <div class="card-body bodyCustom">
-        <p class="card-title">{{obj.email}}</p>
-        <button type="button" class="searchbutton btn btn-dark">Mothi Paaru</button>
+        <p class="card-title">{{obj.mailaddress}}</p>
+        <button type="button" (click)="ConfirmMatch(obj)" class="searchbutton btn btn-dark">Mothi Paaru</button>
       </div>
+ 
     </div>
   </div>
 </div>  
@@ -90,3 +91,4 @@
 </ng-template>
     </div>
 </div>
+

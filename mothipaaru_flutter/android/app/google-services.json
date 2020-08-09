@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "250627111694",
+    "firebase_url": "https://mothi-paaru.firebaseio.com",
+    "project_id": "mothi-paaru",
+    "storage_bucket": "mothi-paaru.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250627111694:android:a8e87093adccf3ec45b55f",
+        "android_client_info": {
+          "package_name": "com.example.mothipaaru_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "250627111694-ccrp26r6i4qjm8h7vh3o40mo389q70fn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mothipaaru_flutter",
+            "certificate_hash": "590d76be46ccc6d18504121f1d11439111d97b80"
+          }
+        },
+        {
+          "client_id": "250627111694-ug67ei71lpbp31i8fcdq6jkm2vu5glcs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzNiEJ4kYgas_OD167YCGiK-pVnYOuM0Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "250627111694-ug67ei71lpbp31i8fcdq6jkm2vu5glcs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
