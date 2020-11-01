@@ -8,7 +8,7 @@ class Notifications extends StatefulWidget {
 class _NotificationsState extends State<Notifications> {
   @override
   Widget build(BuildContext context) {
-     return Scaffold(appBar: new AppBar(title:Text('Notifications')),
+     return Scaffold(
    body:new Center (
      child: new Text("This is Notifications page"),
    ),

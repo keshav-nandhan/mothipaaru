@@ -1,13 +1,20 @@
-import 'package:firebase_auth_ui/providers.dart';
+
 import 'package:flutter/material.dart';
-import 'package:firebase_auth_ui/firebase_auth_ui.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mothipaaru_flutter/users.model.dart';
 import 'home.dart';
- 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
  class LoginPage extends StatelessWidget {
    @override
    Widget build(BuildContext context) {
      return Container(
        height: MediaQuery.of(context).size.height,
+       color: Colors.white,
        width: double.infinity,
        child: MyButton(),
      );
@@ -15,50 +22,55 @@ import 'home.dart';
  }
 
  class MyButton extends StatelessWidget {
+   
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        print('MyButton was tapped!');
-      },
       child: FittedBox(
-                  child: GestureDetector(
-                    onTap: () {
-              FirebaseAuthUi.instance().launchAuth([AuthProvider.google()])
-              .then((firebaseUser){                
+      child: OutlineButton(
+      splashColor: Colors.white,
+      onPressed: () async {
+      UserCredential userCredential;
+      if (kIsWeb) {
+        GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        userCredential = await _auth.signInWithPopup(googleProvider);
+      } else {
+        final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+        final GoogleSignInAuthentication googleAuth =await googleUser.authentication;
+        final GoogleAuthCredential googleAuthCredential =GoogleAuthProvider.credential(accessToken: googleAuth.accessToken,idToken: googleAuth.idToken,);
+        userCredential = await _auth.signInWithCredential(googleAuthCredential);
+      }
+      
+      final Users currentuser= new Users(userCredential.user.displayName, userCredential.user.email, userCredential.user.photoURL, userCredential.user.uid);
               Navigator.push(context, MaterialPageRoute(
               builder: (context) {
-                return HomePage();                      
-                })
-                );
-                    });
-                    },
-                    child: Container(
-                      margin: EdgeInsets.only(bottom: 25),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        color: Colors.blueAccent,
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Text(
-                            "Login with Google",
-                            style: Theme.of(context).textTheme.button.copyWith(
-                                  color: Colors.black,
-                                ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: Colors.black,
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
+                return HomePage(userLoggedIn:currentuser);                      
+                }));
+      },
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+      highlightElevation: 0,
+      borderSide: BorderSide(color: Colors.grey),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Text(
+                'Sign in with Google',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.grey,
+                ),
               ),
+            )
+          ],
+        ),
+      ),
+     ),
+     ),
     );
   }
 }

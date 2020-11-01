@@ -8,7 +8,7 @@ class Chatwindow extends StatefulWidget {
 class _ChatwindowState extends State<Chatwindow> {
   @override
   Widget build(BuildContext context) {
-   return Scaffold(appBar: new AppBar(title:Text('Chat')),
+   return Scaffold(
    body:new Center (
      child: new Text("This is Chat page"),
    ),
