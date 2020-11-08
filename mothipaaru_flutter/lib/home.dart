@@ -1,5 +1,10 @@
+import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mothipaaru_flutter/login.dart';
 import 'package:mothipaaru_flutter/match.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
 // import 'chat.dart';
@@ -33,6 +38,7 @@ int selectedRadio;
 String _myActivity="";
 String _genderValue="";
 TextEditingController mobileNumberController = TextEditingController();
+TextEditingController commentsController = TextEditingController();
 bool searchusers=true;
 
 List<UserDetails> matchedUsers;
@@ -91,6 +97,24 @@ setSelectedRadio(int val) {
        appBar: AppBar(
          title:Text('Mothi Paaru'),
          centerTitle: true,
+         elevation: 4.0, 
+         actions: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: FlatButton(
+              onPressed: () async{
+                await GoogleSignIn().signOut();
+                await FirebaseAuth.instance.signOut();
+                //GoogleSignInAuthentication googleAuth =
+                Navigator.push(context, MaterialPageRoute(
+              builder: (context) {
+                return LoginPage();                      
+                }));
+              },
+              child:  Icon(Icons.login_outlined),
+            ),
+          ),
+        ],
        ),
       key: _scaffoldKey,
 
@@ -122,12 +146,13 @@ child:Column(
  ), 
  
 TextFormField(
+  controller: commentsController,
  decoration: InputDecoration(
      border: InputBorder.none,
      contentPadding: EdgeInsets.all(15.0),
      filled: true,
      fillColor: Colors.grey[150],
-     labelText: 'Enter Your Name'
+     labelText: 'Enter Comments like desc ground/yourself'
    ),
    // The validator receives the text that the user has entered.
    validator: (value) {
@@ -212,14 +237,14 @@ TextFormField(
    
      // Validate returns true if the form is valid, otherwise false.
      if (_formKey.currentState.validate()) {
-       
-       matchedUsers=matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString());
+       await _getCurrentLocation();
+       matchedUsers=await matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString(),commentsController.text.toString());
        await _getCurrentLocation();
        if(matchedUsers.length>0)
        {
          Navigator.push(context, MaterialPageRoute(
               builder: (context) {
-                return Matchfinder(currentUser:currentUser,usersMatchData:this.matchedUsers);                      
+                return Matchfinder(userLoggedIn:currentUser,usersMatchData:matchedUsers);                      
                 })
                 );
        }
@@ -227,10 +252,6 @@ TextFormField(
     },
        child: Text('Search'),
   ),
- 
- 
-
- 
 ]),
      
 
@@ -260,7 +281,12 @@ TextFormField(
       //   }).toList(),
       // ),
           _getCurrentLocation() async {
+            
+            
             final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+            GeolocationStatus locationpermissionstatus=await geolocator.checkGeolocationPermissionStatus();
+            bool locationenabled=await geolocator.isLocationServiceEnabled();
+            if((locationpermissionstatus==GeolocationStatus.granted)&& locationenabled){
             await geolocator
                 .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
                 .then((Position position) {
@@ -271,10 +297,14 @@ TextFormField(
             }).catchError((e) {
               print(e);
             });
+          }
+          else{
+            
+          }
         }
                        
-        List<UserDetails> matchfinderfunc(String gender,String sport,Users userLoggedIn,String cityLocation,String mobilenumber) {
-        List<UserDetails> listDataSource=<UserDetails>[];var opponentsfound;
+        Future<List<UserDetails>> matchfinderfunc(String gender,String sport,Users userLoggedIn,String cityLocation,String mobilenumber,String desccomments) async {
+        List<UserDetails> listDataSource=<UserDetails>[];var opponentsfound;var nearbyplayer;
            FirebaseFirestore.instance.collection('register_team').doc(userLoggedIn.uid.toString()).set({
                   'uid':userLoggedIn.uid,
                   'dateupdated':DateTime.now().toString(),
@@ -282,63 +312,46 @@ TextFormField(
                   'phonenumber':mobilenumber,
                   'favouritesport':sport,
                   'citylocation':cityLocation,
-                  'descground':'',
+                  'descground':desccomments,
                   'imageurl':userLoggedIn.photoURL,
                   'mailaddress':userLoggedIn.email,
-                  'username':userLoggedIn.displayName
+                  'username':userLoggedIn.displayName,
+                  'isUseravailable':true
                 },SetOptions(merge: true));
               FirebaseFirestore.instance.collection("register_team").where('gender',isEqualTo: gender).where('favouritesport',isEqualTo: sport).snapshots()
                .listen((data) =>{
                 data.docs.forEach((doc) =>{
                 if(doc.data()['uid']!=userLoggedIn.uid)
                 {
-                  opponentsfound=new UserDetails(doc.data()['uid'], doc.data()['citylocation'], DateTime.now().toString(), null, doc.data()['favouritesport'], doc.data()['gender'], doc.data()['imageurl'], doc.data()['mailaddress'], doc.data()['phonenumber'], doc.data()['username']),
-                  listDataSource.add(opponentsfound),
+                    nearbyplayer =distancebetweenplayers(doc.data()['citylocation'].toString(),cityLocation),
+                    opponentsfound=new UserDetails(doc.data()['uid'], doc.data()['citylocation'], DateTime.now().toString(), doc.data()['descground'], doc.data()['favouritesport'], doc.data()['gender'], doc.data()['imageurl'], doc.data()['mailaddress'], doc.data()['phonenumber'], doc.data()['username'],nearbyplayer,doc.data()['isUseravailable']),
+                    
+                    listDataSource.add(opponentsfound),
                 }
+                
+                })
+              });
+                //var list=  Firestore.instance.collection("register_team").where('gender',isEqualTo: gender).where('favouritesport',isEqualTo: sport).snapshots().toList();
+            return listDataSource;
+              }
+                          
+                              //  Future<bool> backtoLogin() async{
+                              //       return Future.value(true);// return true if the route to be popped
+                              // }
+                  
+              distancebetweenplayers(String opponentlocation, String usercityLocation){
+              //Lat: 37.4219983, Long: -122.084
+              //final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+              //Future<double> result=geolocator.distanceBetween(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
+              dynamic result=calculateDistance(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()))/1000;
+              result=result.toStringAsFixed(2).toString()+"km";
+              return result;
+              }
               
-              })
-            });
-              //var list=  Firestore.instance.collection("register_team").where('gender',isEqualTo: gender).where('favouritesport',isEqualTo: sport).snapshots().toList();
-        return listDataSource;
-          }
-        
-            //  Future<bool> backtoLogin() async{
-            //       return Future.value(true);// return true if the route to be popped
-            // }
-        
-          ListView userRecordCard(UserDetails matchedUser) {
-             return ListView(
-              padding: const EdgeInsets.all(8.0),
-              children: <Widget>[
-              Container(
-                height: 50,
-                color: Colors.amber[600],
-                child: Center(child:Text(matchUser.username.toString())),
-              ),
-              Container(
-                height: 50,
-                color: Colors.amber[500],
-                child: Center(child: Text(matchUser.phonenumber.toString())),
-              ),
-              Container(
-                height: 50,
-                color: Colors.amber[100],
-                child: Center(child: Text(matchUser.favouritesport.toString())),
-              ),
-            ],
-            );
-          }
-Widget databindUsers (BuildContext context,List<UserDetails> matchedUsers) {
-  return new ListView.builder(
-    padding: EdgeInsets.all(10.0),
-    itemCount:matchedUsers.length,
-    itemBuilder: (context,index){
-        return userRecordCard(matchedUsers[index]);
-            });
-        }                  
-        
+              double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+                var p = 0.017453292519943295; var c = cos; var a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2; return 12742 * asin(sqrt(a)); 
+                }
 
-}
 
 
 
@@ -365,3 +378,4 @@ Widget databindUsers (BuildContext context,List<UserDetails> matchedUsers) {
 // _MatchfinderState createState() => _MatchfinderState();
 // }
 
+}
