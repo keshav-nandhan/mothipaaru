@@ -68,12 +68,21 @@
 
 </div>
 
+<<<<<<< HEAD
 <div class="col-md-5" *ngIf="matchfinders?.length;else warning">
   <div class="customWidth" *ngFor="let obj of matchfinders">
     <div class="card bg-info text-white mb-3">
       <div class="card-header">{{obj.username}}
         <span class="text-right">
           <img src="{{obj.imageurl}}" class="profileimg rounded" alt="...">
+=======
+<div class="col-md-5" *ngIf="(matchfinders | async)?.length;else warning">
+  <div class="customWidth" *ngFor="let obj of matchfinders | async">
+    <div class="card bg-info text-white mb-3">
+      <div class="card-header">{{obj.displayName}}
+        <span class="text-right">
+          <img src="{{obj.photoURL}}" class="profileimg rounded" alt="...">
+>>>>>>> 330f034c37ef95a5a61ed500ed139c20629cd270
         </span>
       </div>
       <div class="card-body bodyCustom">
