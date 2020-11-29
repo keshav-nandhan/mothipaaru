@@ -37,7 +37,7 @@ Widget build(BuildContext context) {
               onPressed: () async{
               Navigator.push(context, MaterialPageRoute(
               builder: (context) {
-                return NotificationsPage(currentUser:widget.userLoggedIn,opponentsList:widget.usersMatchData);                      
+                return NotificationsPage(currentUser:widget.userLoggedIn);                      
                 }));
               },
               child:  Icon(Icons.notifications),
@@ -111,6 +111,10 @@ Widget databindUsers (BuildContext context,List<UserDetails> matchedUsers) {
                   'matchrequestedby':userLoggedIn.uid,
                   'matchrequestedagainst':matchedUser.uid,
                   'sport':matchedUser.favouritesport,
+                  'matchrequestedbyUser':userLoggedIn.displayName,
+                  'matchrequestedagainstUser':matchedUser.username,
+                  'matchrequestedbyPhoto':userLoggedIn.photoURL,
+                  'matchrequestedagainstPhoto':matchedUser.imageurl,
                   'isMatchover':false,
                   'confirmed':false,
                   'dateupdated':DateTime.now().toString(),
@@ -122,7 +126,7 @@ Widget databindUsers (BuildContext context,List<UserDetails> matchedUsers) {
 
                     FirebaseFirestore.instance.collection('register_team').doc(matchedUser.uid.toString()).set({
                   'isUseravailable':false,
-                    },SetOptions(mergeFields:['isUseravailable'] )), 
+                     },SetOptions(mergeFields:['isUseravailable'] )), 
                   });
             },
             child: Text('Mothipaaru'),

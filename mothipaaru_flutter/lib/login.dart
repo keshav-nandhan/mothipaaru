@@ -1,4 +1,5 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
@@ -42,6 +43,9 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
       }
       
       final Users currentuser= new Users(userCredential.user.displayName, userCredential.user.email, userCredential.user.photoURL, userCredential.user.uid);
+         FirebaseFirestore.instance.collection("Users").doc(currentuser.uid).set({
+                    'displayName':currentuser.displayName, 'email':currentuser.email,'photoURL':currentuser.photoURL,'uid':currentuser.uid
+                  },SetOptions(merge:true));
               Navigator.push(context, MaterialPageRoute(
               builder: (context) {
                 return HomePage(userLoggedIn:currentuser);                      
