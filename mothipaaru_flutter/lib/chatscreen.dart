@@ -12,14 +12,14 @@ final greyColor2 = Color(0xffE8E8E8);
 
 class ChatScreenPage extends StatefulWidget {
 
-final String chatroomID;final Users currentUser;
-  ChatScreenPage({Key key,@required this.chatroomID,@required this.currentUser}): super(key: key);
+final String chatroomID;final Users currentUser;final String secondUser;
+  ChatScreenPage({Key key,@required this.chatroomID,@required this.currentUser,@required this.secondUser}): super(key: key);
   @override
   _ChatScreenPageState createState() => _ChatScreenPageState();
 }
 
 class _ChatScreenPageState extends State<ChatScreenPage> {
-    String peerId;
+  String peerId;
   String peerAvatar;
   String id;
 
@@ -78,40 +78,93 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Messges"),),
+      appBar: AppBar(title: Text(widget.secondUser),),
       body: Column(children: <Widget>[
-              Flexible(
+              Expanded(
               child:buildListMessage(),
               ),
             // List of messages
-Expanded(
-  child: Column(children: [
-    Padding(  
-            padding: EdgeInsets.all(15),  
-            child:TextField(
-            controller: textEditingController,
-            decoration: InputDecoration(
-                hintText: 'Type a message',
-                border: OutlineInputBorder(),  
-            ),
-        ),
+Container(
+  margin: EdgeInsets.all(15.0),
+  height: 61,
+  child: Row(children: [
+    Expanded(
+    child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(35.0),
+            boxShadow: [
+              BoxShadow(
+                  offset: Offset(0, 3),
+                  blurRadius: 5,
+                  color: Colors.grey)
+            ],
+          ),
+          child: Row(
+            children: [
+              // IconButton(
+              //     icon: Icon(Icons.face), onPressed: () {}),
+              Expanded(
+                child: TextField(
+                  scrollPadding: EdgeInsets.all(5.0),
+                  controller: textEditingController,
+                  decoration: InputDecoration(
+                      hintText: "Type Something...",
+                      border: InputBorder.none),
+                ),
+              ),
+              // IconButton(
+              //   icon: Icon(Icons.photo_camera),
+              //   onPressed: () {},
+              // ),
+              IconButton(
+                icon: Icon(Icons.send),
+                onPressed: () {
+                    if (textEditingController.text.isNotEmpty) {
+                      FirebaseFirestore.instance.collection("chatroom").doc(widget.chatroomID).collection("messages").add({
+                        "sendBy": widget.currentUser.uid,
+                        "message": textEditingController.text,
+                        'timestamp': DateTime.now().millisecondsSinceEpoch
+                        }).then((value) => 
+                            setState(() {
+                                    textEditingController.text = "";
+                                  })
+                        );
+                      }
+                  
+                },
+               )
+            ],
+          ),
     ),
-        ElevatedButton(
-            onPressed: () {
-    if (textEditingController.text.isNotEmpty) {
-      FirebaseFirestore.instance.collection("chatroom").doc(widget.chatroomID).collection("messages").add({
-        "sendBy": widget.currentUser.uid,
-        "message": textEditingController.text,
-        'timestamp': DateTime.now().millisecondsSinceEpoch
-        }).then((value) => 
-            setState(() {
-                    textEditingController.text = "";
-                  })
-        );
-      }
-            },
-            child: Icon(Icons.send)
-        ),
+    ),
+    // Expanded(  
+    //         //padding: EdgeInsets.all(1),  
+    //         child:TextField(
+    //         controller: textEditingController,
+    //         decoration: InputDecoration(
+    //             hintText: 'Type a message',
+    //             border: OutlineInputBorder(),  
+    //         ),
+    //     ),
+    // ),
+    //     Flexible(child:ElevatedButton(
+    //         onPressed: () {
+    // if (textEditingController.text.isNotEmpty) {
+    //   FirebaseFirestore.instance.collection("chatroom").doc(widget.chatroomID).collection("messages").add({
+    //     "sendBy": widget.currentUser.uid,
+    //     "message": textEditingController.text,
+    //     'timestamp': DateTime.now().millisecondsSinceEpoch
+    //     }).then((value) => 
+    //         setState(() {
+    //                 textEditingController.text = "";
+    //               })
+    //     );
+    //   }
+    //         },
+    //         child: Icon(Icons.send)
+    //     ),
+    //     ),
         
             ],)
             
@@ -248,10 +301,7 @@ void onSendMessage(String content, int type) {
                          
                     }
                    
-                    buildItem(int index, document) {
-                       
-                    }
-
+                    
   class MessageTile extends StatelessWidget {
   final String message;
   final bool sendByMe;
@@ -265,6 +315,7 @@ void onSendMessage(String content, int type) {
           bottom: 8,
           left: sendByMe ? 0 : 24,
           right: sendByMe ? 24 : 0),
+         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .6),
       alignment: sendByMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: sendByMe
@@ -290,9 +341,9 @@ void onSendMessage(String content, int type) {
             textAlign: TextAlign.start,
             style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 15,
             fontFamily: 'OverpassRegular',
-            fontWeight: FontWeight.w300)),
+            fontWeight: FontWeight.w400)),
       ),
     );
   }

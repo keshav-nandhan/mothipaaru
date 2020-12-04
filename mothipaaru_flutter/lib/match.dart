@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:mothipaaru_flutter/loading.dart';
 import 'package:mothipaaru_flutter/notifications.dart';
 import 'package:mothipaaru_flutter/userDetails.model.dart';
 import 'users.model.dart';
@@ -46,7 +47,16 @@ Widget build(BuildContext context) {
         ],
   ),
   //child: new ListView.builder(itemBuilder:this.matchUser)
-  body:databindUsers(context,widget.usersMatchData)
+  body: FutureBuilder(
+      future: futureloaderdelay(),//it will return the future type result
+            builder: (context, snapshot) {
+              
+              if(snapshot.connectionState == ConnectionState.done) {
+                return  databindUsers(context,widget.usersMatchData);
+              }
+              return Loading(); //show loading
+            }),
+ 
          //appBar: new AppBar(title:Text('Match')),
 );
                          
@@ -161,6 +171,10 @@ Widget databindUsers (BuildContext context,List<UserDetails> matchedUsers) {
             ],
             );
           }
+
+                 futureloaderdelay() {
+            return Future.delayed(Duration(milliseconds: 3000),);
+        }
 
 }
 

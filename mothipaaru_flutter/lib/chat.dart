@@ -106,7 +106,7 @@ setState(() {
                           onTap: (){
                             Navigator.push(context, MaterialPageRoute(
                       builder: (context) {
-                        return ChatScreenPage(chatroomID:matchreq.chatRoomID.toString(),currentUser:widget.currentUser);                      
+                        return ChatScreenPage(chatroomID:matchreq.chatRoomID.toString(),currentUser:widget.currentUser,secondUser:matchreq.displayName);                      
                         }));
                           },
         

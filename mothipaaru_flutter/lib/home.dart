@@ -8,7 +8,7 @@ import 'package:mothipaaru_flutter/login.dart';
 import 'package:mothipaaru_flutter/match.dart';
 import 'package:mothipaaru_flutter/notifications.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 // import 'chat.dart';
 // import 'match.dart';
 // import 'notifications.dart';
@@ -39,6 +39,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin<HomeP
   
 PageController pageController;
 Position _currentPosition;
+bool grantpermission;
 UserDetails matchUser;
 final _formKey = GlobalKey<FormState>();
 
@@ -96,14 +97,16 @@ setSelectedRadio(int val) {
   Widget build(BuildContext context) {
   
   final Users currentUser=widget.userLoggedIn;
+  
   //  final List<Widget> views=[
   //    Matchfinder(userLoggedIn: currentUser),
   //    Notifications(),
   //    Chatwindow()
   //  ];
   
-     return Scaffold(
-       appBar: AppBar(title:Text('Mothi Paaru'),
+     return WillPopScope(
+       onWillPop: _willConfirmExit,
+       child: Scaffold(appBar:AppBar(title:Text('Mothi Paaru'),
          elevation: 15.0, 
          actions: <Widget>[
              FlatButton(
@@ -242,13 +245,12 @@ TextFormField(
    
  RaisedButton(
    onPressed: () async {
+     grantpermission=await Permission.locationWhenInUse.isGranted;
    
      // Validate returns true if the form is valid, otherwise false.
     if (_formKey.currentState.validate()) {
-    await _getCurrentLocation().then((value)=>{
-          matchedUsers=matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString(),commentsController.text.toString())
-    });
-       
+    await _getCurrentLocation();
+    matchedUsers=matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString(),commentsController.text.toString());
        Future.delayed(Duration(milliseconds: 1000)).then((value) => {
        if(matchedUsers.length>0)
        {
@@ -261,7 +263,15 @@ TextFormField(
        else{
          if((_currentPosition.toString()=="")||(_currentPosition.toString()=="null"))
          {
+           if(!grantpermission)
+           {
+           Permission.locationWhenInUse.request(),
+           }
+           else{
+         
            showLocationDialog(context)
+           }
+
          }
          else{
           showAlertDialog(context)
@@ -331,8 +341,8 @@ Align(
 ),
 
 ),
-);
- 
+)
+     );
   }        
       // PageView(
       //   children: views,
@@ -368,11 +378,13 @@ Align(
               setState(() {
                 _currentPosition = position;
               });
+              //return position;
               //_getAddressFromLatLng();
             }).catchError((e) {
               print(e);
             });
           }
+          
         }
                        
         List<UserDetails> matchfinderfunc(String gender,String sport,Users userLoggedIn,String cityLocation,String mobilenumber,String desccomments) {
@@ -466,7 +478,7 @@ showLocationDialog(BuildContext context) {
   // Create AlertDialog  
   AlertDialog alert = AlertDialog(  
     title: Text("Location Settings"),  
-    content: Text("Please enable location and grant permission"),
+    content: Text("Please enable location and try again"),
     actions: [  
       okButton,  
     ]
@@ -479,7 +491,29 @@ showLocationDialog(BuildContext context) {
     },  
   );  
   }
-
+Future<bool> _willConfirmExit() async {
+  bool confirmexit=false;
+    showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                        title: Text('Confirm?'),
+                        content: Text('Are you sure you want to Exit?'),
+                        actions: <Widget>[
+                          FlatButton(
+                              onPressed: () => Navigator.of(context).pop('No'),
+                              child: Text('No')),
+                          FlatButton(
+                              onPressed: () => Navigator.of(context).pop('Yes'),
+                              child: Text('Yes'))
+                        ],
+                    )).then((value) =>
+                  {
+                  if(value.toString()=='Yes')
+                         confirmexit= true
+            });
+            return confirmexit;
+            // return true if the route to be popped
+}
 
 // class Modules {
 //   const Modules(this.title, this.icon, this.color);

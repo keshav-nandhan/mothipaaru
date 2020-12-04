@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:mothipaaru_flutter/chat.dart';
 import 'package:mothipaaru_flutter/loading.dart';
 import 'package:mothipaaru_flutter/notification.model.dart';
@@ -18,21 +20,28 @@ final Users currentUser;
 class _NotificationsPageState extends State<NotificationsPage> {
 
 List<NotificationModel> notificationitems=[];
+ScrollController listscrollcontroller;
   @override
 void initState() {
+  listscrollcontroller = ScrollController();
+ listscrollcontroller.addListener(_scrollListener);
    super.initState();
   var notify;List<NotificationModel> matchesrequested=[];
-  FirebaseFirestore.instance.collection("register_match").get().then((data) {
+  FirebaseFirestore.instance.collection("register_match").where('matchrequestedagainst',isEqualTo: widget.currentUser.uid).snapshots().listen((data) {
         data.docs.forEach((doc) =>{
           notify=new NotificationModel(doc.data()['matchrequestedagainst'],doc.data()['matchrequestedby'],doc.data()['sport'],doc.data()['isMatchover'],doc.data()['confirmed'],doc.data()['dateupdated'],doc.data()['matchrequestedbyUser'],doc.data()['matchrequestedagainstUser'],doc.data()['matchrequestedbyPhoto'],doc.data()['matchrequestedagainstPhoto'],doc.id),
           matchesrequested.add(notify),
         });
-          
-   }).then((value) => {
+   });
+   FirebaseFirestore.instance.collection("register_match").where('matchrequestedby',isEqualTo: widget.currentUser.uid).snapshots().listen((data) {
+        data.docs.forEach((doc) =>{
+          notify=new NotificationModel(doc.data()['matchrequestedagainst'],doc.data()['matchrequestedby'],doc.data()['sport'],doc.data()['isMatchover'],doc.data()['confirmed'],doc.data()['dateupdated'],doc.data()['matchrequestedbyUser'],doc.data()['matchrequestedagainstUser'],doc.data()['matchrequestedbyPhoto'],doc.data()['matchrequestedagainstPhoto'],doc.id),
+          matchesrequested.add(notify),
+        });
+   });
           setState((){
                  this.notificationitems=matchesrequested;
-                  })
-   });
+                  });
 }
 
   @override
@@ -40,7 +49,18 @@ void initState() {
     super.dispose();
   }
 
-
+_scrollListener() {
+  if (listscrollcontroller.offset >= listscrollcontroller.position.maxScrollExtent &&
+     !listscrollcontroller.position.outOfRange) {
+   setState(() {//you can do anything here
+   });
+ }
+ if (listscrollcontroller.offset <= listscrollcontroller.position.minScrollExtent &&
+    !listscrollcontroller.position.outOfRange) {
+   setState(() {//you can do anything here
+    });
+  }
+}
  
   @override
   Widget build(BuildContext context) {
@@ -62,7 +82,11 @@ void initState() {
             builder: (context, snapshot) {
               
               if(snapshot.connectionState == ConnectionState.done) {
-                return databindUsers(context,widget.currentUser,this.notificationitems);
+                return new ListView(
+                  children: databindUsers(context,widget.currentUser,this.notificationitems),
+                  scrollDirection: Axis.vertical,
+                );
+                 //Column(children:databindUsers(context,widget.currentUser,this.notificationitems));
               }
               return Loading(); //show loading
             })
@@ -70,27 +94,55 @@ void initState() {
    );
   }
 
-  Widget databindUsers (BuildContext context,Users currentUser,List<NotificationModel> matchnotification) {
-    if(this.notificationitems.length>0){
-  return new ListView.builder(
-    padding: EdgeInsets.all(10.0),  
-    itemCount:matchnotification.length,
-    itemBuilder: (context,index){
-        return _createListRow(matchnotification[index]);
-            });
+  List <Widget> databindUsers (BuildContext context,Users currentUser,List<NotificationModel> matchnotification) {
+    List <Widget> notice=[];
+    if(matchnotification.length>0){
+      for(var i=0;i<matchnotification.length;i++){
+        notice.add( _createListRow(matchnotification[i]));
+      // return new Column(children:<Widget>[
+      //   Padding(child: _createListRow(matchnotification[i]),
+      //   padding: EdgeInsets.all(5.0),
+      //)
+        
+      //]);
+      }
     }
-    else{
-      return Text("No Pending Notifications");
+    else notice.add(Text("No New  Notifications Pending"));
+    return notice;
     }
-        }
-
-      _createListRow(NotificationModel matchreq) {
-        if((matchreq.matchrequestedagainst==widget.currentUser.uid)&&(!matchreq.confirmed)&&(!matchreq.isMatchover))
-        {
-        return Card(
-          elevation: 3,
-          clipBehavior: Clip.antiAlias,
-          margin: EdgeInsets.all(4.0),
+      
+  // return new ListView.builder(
+  //   padding: EdgeInsets.all(4.0),  
+  //   controller: listscrollcontroller,
+  //   itemCount:matchnotification,
+  //   itemBuilder: (context,index){
+      
+      // children:[new Expanded(child:SizedBox(child: new ListView.builder(
+          // if(_createListRow(matchnotification[index])==[])
+          // {
+          //  return new Text("No Pending Notifications");
+          // }
+          // else{
+          //   return new Column(children: _createListRow(matchnotification[index]));
+          // }
+          
+      
+    //}
+  //    {
+  //   return new Row(children: strings.map((item) => new Text(item)).toList());
+  // }
+        //return _createListRow(matchnotification[index]);
+  
+    
+     Widget _createListRow(NotificationModel matchreq) {
+        if(matchreq.matchrequestedagainst==widget.currentUser.uid){
+          if(!matchreq.confirmed){
+          return new Padding(
+            padding: EdgeInsets.all(4.0),
+            child:Card(
+          elevation: 2,
+          clipBehavior: Clip.hardEdge,
+          margin: EdgeInsets.all(5.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
@@ -101,10 +153,10 @@ void initState() {
                    radius: 25.0,
                    backgroundImage:NetworkImage(matchreq.matchrequestedbyPhoto.toString()),
                    backgroundColor: Colors.transparent),
+                   contentPadding: EdgeInsets.all(4.0),
+                   title:  Container(child:Text(matchreq.matchrequestedbyUser.toString()+ " has Challenged a " + matchreq.sport.toString() + " match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
                   //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
-                  contentPadding: EdgeInsets.all(5.0),
-                  subtitle: Text(matchreq.matchrequestedbyUser.toString()+ " has Challenged a " + matchreq.sport.toString() + " match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),),
-
+                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated)))),
                 ),
             
               ButtonBar(
@@ -120,7 +172,16 @@ void initState() {
                   FirebaseFirestore.instance.collection("register_match").doc(matchreq.docid).set({
                     'confirmed':true,
                     'dateupdated':DateTime.now().toString()
-                  },SetOptions(merge: true));
+                  },SetOptions(merge: true)).then((value) => {
+                    //this.notificationitems.forEach((element) {
+                    
+                      setState(() {
+                                        
+                    })
+                  });
+                    //this.notificationitems=this.notificationitems;
+                    
+                  
                       FirebaseFirestore.instance.collection("chatroom").get().then((data) => {
                      data.docs.forEach((doc) =>{
                        if(doc.id.contains(matchreq.matchrequestedagainst)&&doc.id.contains(matchreq.matchrequestedby))
@@ -142,7 +203,13 @@ void initState() {
                                           return Chatwindow(currentUser:widget.currentUser);                      
                                           })) 
                                                         })
-                                                    }
+                            }
+                            else{
+                                                           Navigator.pushReplacement(context, MaterialPageRoute(
+                                        builder: (context) {
+                                          return NotificationsPage(currentUser:widget.currentUser);                      
+                                          })) 
+                            }
                             });
             },
             child: Text('Yes'),
@@ -159,10 +226,17 @@ void initState() {
                 ),
             ],
           ),
-        );
-               }
-               else if((matchreq.matchrequestedby==widget.currentUser.uid)&&(!matchreq.confirmed)&&(!matchreq.isMatchover)){
-                 return ListTile(
+        ),
+          );
+          }
+          else{
+              return new Card( 
+                elevation: 2,
+          clipBehavior: Clip.hardEdge,
+          margin: EdgeInsets.all(5.0),
+                child:Padding(
+                padding: EdgeInsets.all(4.0),
+                child:ListTile(
                  leading: CircleAvatar(
                    radius: 25.0,
                    backgroundImage:NetworkImage(matchreq.matchrequestedagainstPhoto.toString()),
@@ -170,9 +244,73 @@ void initState() {
 
                   //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
                   contentPadding: EdgeInsets.all(5.0),
-                  subtitle: Text("You have Challenged "+matchreq.matchrequestedagainstUser.toString()+ " a "+matchreq.sport+" match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
-                );
-               }
+                  title: Container(child:Text("You have Accepted a "+matchreq.sport+" match with "+matchreq.matchrequestedbyUser.toString()+ ". Now you can chat with "+matchreq.matchrequestedbyUser,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
+                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated)))),
+               ),
+              )
+              );
+          }
+        }
+        else if(matchreq.matchrequestedby==widget.currentUser.uid){
+          if(!matchreq.confirmed){
+      return new Card( 
+                elevation: 2,
+          clipBehavior: Clip.hardEdge,
+          margin: EdgeInsets.all(5.0),
+                child:Padding(
+                padding: EdgeInsets.all(4.0),
+                child:ListTile(
+          leading: CircleAvatar(
+            radius: 25.0,
+            backgroundImage:NetworkImage(matchreq.matchrequestedagainstPhoto.toString()),
+            backgroundColor: Colors.transparent),
+
+          //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
+          contentPadding: EdgeInsets.all(5.0),
+          subtitle: Text("You have Challenged "+matchreq.matchrequestedagainstUser.toString()+ " a "+matchreq.sport+" match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+        ),
+      ),
+      );
+          }
+          else
+          {
+         return new Card( 
+                elevation: 2,
+          clipBehavior: Clip.hardEdge,
+          margin: EdgeInsets.all(5.0),
+                child:Padding(
+                padding: EdgeInsets.all(4.0),
+                child:ListTile(
+          leading: CircleAvatar(
+            radius: 25.0,
+            backgroundImage:NetworkImage(matchreq.matchrequestedagainstPhoto.toString()),
+            backgroundColor: Colors.transparent),
+
+          //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
+          contentPadding: EdgeInsets.all(5.0),
+          subtitle: Text(matchreq.matchrequestedagainstUser.toString()+ " has Accepted your "+matchreq.sport+" match Challenge. Now you can chat with "+matchreq.matchrequestedagainstUser,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+        ),
+         ),
+         );  
+          }
+        }
+        else{
+         return new Card( 
+                elevation: 2,
+          clipBehavior: Clip.hardEdge,
+          margin: EdgeInsets.all(5.0),
+                child:Padding(
+                padding: EdgeInsets.all(4.0),
+                child:ListTile(
+          //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
+          contentPadding: EdgeInsets.all(5.0),
+          subtitle: Text("No New Pending Notifications" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+        ),
+      ),
+         );
+
+        }
+               
       }
       
       futureloaderdelay() {
