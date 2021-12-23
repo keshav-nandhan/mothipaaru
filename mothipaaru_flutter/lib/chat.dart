@@ -8,7 +8,7 @@ import 'package:mothipaaru_flutter/message.model.dart';
 class Chatwindow extends StatefulWidget {
 
 final Users currentUser;
-Chatwindow({Key key,@required this.currentUser}): super(key: key);
+Chatwindow({Key? key,required this.currentUser}): super(key: key);
 
   @override
   _ChatwindowState createState() => _ChatwindowState();
@@ -17,6 +17,8 @@ Chatwindow({Key key,@required this.currentUser}): super(key: key);
 class _ChatwindowState extends State<Chatwindow> {
 List<ChatRoomModel> chatrooms=[];
 List<ChatUsers> chatwithPeople=[];
+
+  static const kDefaultPadding=4.0;
 
 @override
 void initState(){
@@ -29,14 +31,14 @@ void initState(){
             if(doc.data()["usercontact1"]==widget.currentUser.uid)
             {
               FirebaseFirestore.instance.collection("Users").doc(doc.data()['usercontact2']).get().then((element) {
-                ChatUsers people=new ChatUsers(element.data()["displayName"],element.data()["email"],element.data()["photoURL"], element.data()["uid"],doc.id);
+                ChatUsers people=new ChatUsers(element.data()!["displayName"],element.data()!["email"],element.data()!["photoURL"], element.data()!["uid"],doc.id);
                 guystochat.add(people);
                 }),
             } 
             else if(doc.data()["usercontact2"]==widget.currentUser.uid)
             {  
               FirebaseFirestore.instance.collection("Users").doc(doc.data()['usercontact1']).get().then((element) {
-                ChatUsers people=new ChatUsers(element.data()["displayName"],element.data()["email"],element.data()["photoURL"], element.data()["uid"],doc.id);
+                ChatUsers people=new ChatUsers(element.data()!["displayName"],element.data()!["email"],element.data()!["photoURL"], element.data()!["uid"],doc.id);
                 guystochat.add(people);
                 }),
             }
@@ -60,7 +62,8 @@ setState(() {
       @override
       Widget build(BuildContext context) {
       return Scaffold(
-      appBar: AppBar(title: Text('Messages'),),
+      appBar: AppBar(title: Text('Chats'),
+      actions: [IconButton(icon: Icon(Icons.search), onPressed: (){})]),
       //body:databindUsers(context,widget.currentUser,this.chatwithPeople)
       body: FutureBuilder(
       future: futureloaderdelay(),//it will return the future type result
@@ -92,9 +95,9 @@ setState(() {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      //CircleAvatar(backgroundImage: AssetImage(matchedUser.imageurl.toString())),
-                       
-                       ListTile(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding,vertical:kDefaultPadding*0.75),
+                        child: ListTile(
                         //  leading: CircleAvatar(
                         //    radius: 25.0,
                         //    backgroundImage:NetworkImage(matchreq.matchrequestedbyPhoto.toString()),
@@ -110,7 +113,10 @@ setState(() {
                         }));
                           },
         
-                        ),
+                        ),)
+                      //CircleAvatar(backgroundImage: AssetImage(matchedUser.imageurl.toString())),
+                       
+                       
                     
                     ],
                   ),

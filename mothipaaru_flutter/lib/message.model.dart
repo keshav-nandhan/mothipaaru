@@ -13,10 +13,10 @@ MessageModel(this.sender,this.text,this.time);
 }
 
 class ChatUsers{
-   final String uid;
-  final String email;
-  final String displayName;
-    final String photoURL;
+   final String? uid;
+  final String? email;
+  final String? displayName;
+    final String? photoURL;
   final String chatRoomID;
 ChatUsers(this.displayName,this.email,this.photoURL,this.uid,this.chatRoomID);
 }

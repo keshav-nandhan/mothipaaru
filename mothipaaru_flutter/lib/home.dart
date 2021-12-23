@@ -1,7 +1,7 @@
-import 'dart:math' show cos, sqrt, asin;
+
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mothipaaru_flutter/chat.dart';
 import 'package:mothipaaru_flutter/login.dart';
@@ -12,23 +12,19 @@ import 'package:permission_handler/permission_handler.dart';
 // import 'chat.dart';
 // import 'match.dart';
 // import 'notifications.dart';
-import 'package:dropdown_formfield/dropdown_formfield.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mothipaaru_flutter/userDetails.model.dart';
 import 'users.model.dart';
 
-
 class HomePage extends StatefulWidget {
 
 final Users userLoggedIn;
-HomePage({Key key, @required this.userLoggedIn}) : super(key: key);
-
+HomePage({Key? key, required this.userLoggedIn}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
-
 
 enum PermissionGroup {
   locationAlways,
@@ -37,21 +33,23 @@ enum PermissionGroup {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin<HomePage>{
   
-PageController pageController;
-Position _currentPosition;
-bool grantpermission;
-UserDetails matchUser;
+late PageController pageController;
+Position? _currentPosition;
+late bool grantpermission;
+UserDetails? matchUser;
 final _formKey = GlobalKey<FormState>();
 
 // Declare this variable
-int selectedRadio;
-String _myActivity="";
-String _genderValue="";
+int? selectedRadio;
+String? _myActivity="";
+String? _genderValue="";
 TextEditingController mobileNumberController = TextEditingController();
 TextEditingController commentsController = TextEditingController();
 bool searchusers=true;
 
-List<UserDetails> matchedUsers;
+List<UserDetails>? matchedUsers;
+
+  var dropdownkey;
 
 @override
 void initState() {
@@ -59,7 +57,7 @@ void initState() {
   selectedRadio = 0;
 }
  
- setSelectedRadioTile(String val) {
+ setSelectedRadioTile(String? val) {
     setState(() {
       _genderValue = val;
     });
@@ -104,12 +102,20 @@ setSelectedRadio(int val) {
   //    Chatwindow()
   //  ];
   
+     final List<String> items=<String>[
+          "Football",
+          "Basketball",
+          "Cricket",
+          "Voleyball",
+          "Badminton"
+     ];
      return WillPopScope(
        onWillPop: _willConfirmExit,
-       child: Scaffold(appBar:AppBar(title:Text('Mothi Paaru'),
+       
+        child:Scaffold(appBar:AppBar(title:Text('Mothi Paaru'),
          elevation: 15.0, 
          actions: <Widget>[
-             FlatButton(
+             TextButton(
               onPressed: () async{
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
@@ -126,13 +132,20 @@ setSelectedRadio(int val) {
       key: _scaffoldKey,
 
 body:Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [Colors.transparent, Colors.black12]),
+        ),
     child:Column(
     children:[
     Form(
     key: _formKey,
-child: Column(
+    child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment:CrossAxisAlignment.center,
+        
         children: <Widget>[
           
  // Add TextFormFields and RaisedButton here.
@@ -143,13 +156,13 @@ child: Column(
  border: InputBorder.none,
  contentPadding: EdgeInsets.all(15.0),
  filled: true,
- fillColor: Colors.grey[150],
+ fillColor: Colors.black12,
  labelText: 'Enter Mobile Number'
      
     ),
    // The validator receives the text that the user has entered.
    validator: (value) {
-     if (value.isEmpty) {
+     if (value!.isEmpty) {
      return 'Please enter valid number';
      }
      return null;
@@ -162,12 +175,12 @@ TextFormField(
      border: InputBorder.none,
      contentPadding: EdgeInsets.all(15.0),
      filled: true,
-     fillColor: Colors.grey[150],
+     fillColor: Colors.black12,
      labelText: 'Enter Comments like desc ground/yourself'
    ),
    // The validator receives the text that the user has entered.
    validator: (value) {
-     if (value.isEmpty) {
+     if (value!.isEmpty) {
  return 'Please enter valid Name';
      }
      return null;
@@ -180,11 +193,10 @@ TextFormField(
     value: "Male",
     groupValue: _genderValue,
     title: Text("Male"),
-    onChanged: (val) {
- print("Radio Tile pressed $val");
+    onChanged: (dynamic val) {
  setSelectedRadioTile(val);
     },
-    activeColor: Colors.orange,
+    activeColor: Colors.brown,
     selected: true,
   ),
  
@@ -192,67 +204,39 @@ TextFormField(
     value: "Female",
     groupValue: _genderValue,
     title: Text("Female"),
-    onChanged: (val) {
- print("Radio Tile pressed $val");
+    onChanged: (dynamic val) {
  setSelectedRadioTile(val);
     },
-    activeColor: Colors.orange,
+    activeColor: Colors.brown,
     selected: false,
   ),],)
  ),
-  DropDownFormField(
-     filled: true,
-     errorText: "Please Select Atleast one sport",
-     required: true,
-     titleText: 'Favourite Sport',
-     hintText: 'Please choose one',
-     value: _myActivity,
-     onSaved: (value) {
-       setState(() {
-         _myActivity = value;
-       });
-     },
-     onChanged: (value) {
-       setState(() {
-         _myActivity = value;
-       });
-     },
-     dataSource: [
-       {
-         "display": "Football",
-         "value": "Football",
-       },
-       {
-         "display": "Basketball",
-         "value": "Basketball",
-       },
-       {
-         "display": "Cricket",
-         "value": "Cricket",
-       },
-       {
-         "display": "Voleyball",
-         "value": "Voleyball",
-       },
-       {
-         "display": "Badminton",
-         "value": "Badminton",
-       },
-     ],
-     textField: 'display',
-     valueField: 'value',
+  DropdownButton(
+    value : _myActivity!.isNotEmpty? _myActivity : items[0], 
+    icon: const Icon(Icons.keyboard_arrow_down),      
+    items:items.map((item) {
+                return DropdownMenuItem(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+               onChanged: (String? newValue) { 
+                setState(() {
+                  _myActivity = newValue!;
+                });
+              },
    ),
    
- RaisedButton(
+ ElevatedButton(
    onPressed: () async {
      grantpermission=await Permission.locationWhenInUse.isGranted;
    
      // Validate returns true if the form is valid, otherwise false.
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
     await _getCurrentLocation();
     matchedUsers=matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString(),commentsController.text.toString());
        Future.delayed(Duration(milliseconds: 1000)).then((value) => {
-       if(matchedUsers.length>0)
+       if(matchedUsers!.length>0)
        {
          Navigator.push(context, MaterialPageRoute(
               builder: (context) {
@@ -290,6 +274,7 @@ TextFormField(
 Flexible(
   child:Row(
     crossAxisAlignment: CrossAxisAlignment.baseline,
+    textBaseline: TextBaseline.alphabetic,
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
     children: [
@@ -298,7 +283,7 @@ Flexible(
  child:FloatingActionButton(
     mini: true,
     heroTag:"notifybtn",
-  backgroundColor: Colors.red,
+  backgroundColor: Colors.transparent,
   foregroundColor: Colors.black,
   onPressed: () {
     Navigator.push(context, MaterialPageRoute(
@@ -316,7 +301,7 @@ Align(
      child:FloatingActionButton(
        heroTag: "chatbtn",
         mini: true,
-      backgroundColor: Colors.red,
+      backgroundColor: Colors.transparent,
       foregroundColor: Colors.black,
       onPressed: () {
         Navigator.push(context, MaterialPageRoute(
@@ -342,6 +327,7 @@ Align(
 
 ),
 )
+     
      );
   }        
       // PageView(
@@ -368,11 +354,18 @@ Align(
       // ),
           _getCurrentLocation() async {
           
-            final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-            GeolocationStatus locationpermissionstatus=await geolocator.checkGeolocationPermissionStatus();
-            bool locationenabled=await geolocator.isLocationServiceEnabled();
-            if((locationpermissionstatus==GeolocationStatus.granted)&& locationenabled){
-            await geolocator
+            //final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+            //GeolocationStatus locationpermissionstatus=await geolocator.checkGeolocationPermissionStatus();
+            bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+            if (!serviceEnabled) {
+    
+              return Future.error('Location services are disabled.');
+            }
+
+
+            LocationPermission locationenabled=await Geolocator.requestPermission();
+            if(serviceEnabled && (locationenabled==LocationPermission.whileInUse || locationenabled==LocationPermission.always)){
+            await Geolocator
                 .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
                 .then((Position position) {
               setState(() {
@@ -387,8 +380,8 @@ Align(
           
         }
                        
-        List<UserDetails> matchfinderfunc(String gender,String sport,Users userLoggedIn,String cityLocation,String mobilenumber,String desccomments) {
-        List<UserDetails> listDataSource=<UserDetails>[];var opponentsfound;var nearbyplayer;
+        List<UserDetails> matchfinderfunc(String? gender,String? sport,Users userLoggedIn,String cityLocation,String mobilenumber,String desccomments) {
+        List<UserDetails> listDataSource=<UserDetails>[];var opponentsfound;var nearbyplayer;var totalfollowers;var isfollowing;
            FirebaseFirestore.instance.collection('register_team').doc(userLoggedIn.uid.toString()).set({
                   'uid':userLoggedIn.uid,
                   'dateupdated':DateTime.now().toString(),
@@ -405,10 +398,12 @@ Align(
               FirebaseFirestore.instance.collection("register_team").where('gender',isEqualTo: gender).where('favouritesport',isEqualTo: sport).snapshots()
                .listen((data) =>{
                 data.docs.forEach((doc) =>{
-                if(doc.data()['uid']!=userLoggedIn.uid)
+                if(doc['uid']!=userLoggedIn.uid)
                 {
-                    nearbyplayer =distancebetweenplayers(doc.data()['citylocation'].toString(),cityLocation),
-                    opponentsfound=new UserDetails(doc.data()['uid'], doc.data()['citylocation'], DateTime.now().toString(), doc.data()['descground'], doc.data()['favouritesport'], doc.data()['gender'], doc.data()['imageurl'], doc.data()['mailaddress'], doc.data()['phonenumber'], doc.data()['username'],nearbyplayer,doc.data()['isUseravailable']),
+                    isfollowing=followCheck(doc['uid'], widget.userLoggedIn.uid),
+                    nearbyplayer =distancebetweenplayers(doc['citylocation'].toString(),cityLocation),
+                    //totalfollowers=countFollowers(doc['uid']),
+                    opponentsfound=new UserDetails(doc['uid'], doc['citylocation'], DateTime.now().toString(), doc['descground'], doc['favouritesport'], doc['gender'], doc['imageurl'], doc['mailaddress'], doc['phonenumber'], doc['username'],nearbyplayer,doc['isUseravailable'],isfollowing),
                     listDataSource.add(opponentsfound),
                 }
                 
@@ -421,29 +416,54 @@ Align(
                               //  Future<bool> backtoLogin() async{
                               //       return Future.value(true);// return true if the route to be popped
                               // }
-                  
+//  countFollowers(String? userid){
+//    if (userid ==null || userid=="") return 0;
+//    else if(userid!=""){
+//    var followers=FirebaseFirestore.instance.collection("Users").doc(userid).collection("FollowedBy").snapshots().listen((value) =>{  value.docs.length});
+//    return followers;
+//    }
+//}
+ 
+ followCheck(String? userid,String loggedIn){
+   bool following=false;
+   if (userid ==null || loggedIn=="") following=false;
+   else
+   {
+   FirebaseFirestore.instance.collection("Users").doc(loggedIn).collection("Following").snapshots().listen((data)=> {
+   data.docs.forEach((element) { 
+     if(element['uid']==userid)
+     {
+      following=true;
+     }
+   })  
+   });
+   return following;
+   }
+ }
+                                     
               distancebetweenplayers(String opponentlocation, String usercityLocation){
+                
+              double result=Geolocator.distanceBetween(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[0].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
               //Lat: 37.4219983, Long: -122.084
-              double result=calculateDistance(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[0].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
+              //double result=calculateDistance(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[0].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
               return result.toStringAsFixed(2).toString()+" km";
-              
               }
               
-               double calculateDistance(lat1,lon1,lat2,lon2){
-                // final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+              //  double calculateDistance(lat1,lon1,lat2,lon2){
+              // // final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+               
+              // // geolocator.distanceBetween(lat1,lon1,lat2,lon2).then((value){
+              // //   return value.toString();
+              // // });
                 
-                // geolocator.distanceBetween(lat1,lon1,lat2,lon2).then((value){
-                //   return value.toString();
-                // });
-                
-                var p = 0.017453292519943295;
-                var c = cos;
-                var a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
-                return 12742 * asin(sqrt(a));
-                }
+              //   var p = 0.017453292519943295;
+              //   var c = cos;
+              //   var a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
+              //   return 12742 * asin(sqrt(a));
+              //   }
 
   showAlertDialog(BuildContext context) {
-    Widget okButton = FlatButton(  
+    Widget okButton = TextButton(  
     child: Text("OK"),  
     onPressed: () {  
       Navigator.of(context).pop();  
@@ -468,7 +488,7 @@ Align(
   }
 
 showLocationDialog(BuildContext context) {
-    Widget okButton = FlatButton(  
+    Widget okButton = TextButton(  
     child: Text("OK"),  
     onPressed: () {  
       Navigator.of(context).pop();  
@@ -492,26 +512,26 @@ showLocationDialog(BuildContext context) {
   );  
   }
 Future<bool> _willConfirmExit() async {
-  bool confirmexit=false;
     showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
+                  builder: (context) => WillPopScope(
+                    onWillPop: () async => false,
+                    child: AlertDialog(
                         title: Text('Confirm?'),
                         content: Text('Are you sure you want to Exit?'),
                         actions: <Widget>[
-                          FlatButton(
+                          TextButton(
                               onPressed: () => Navigator.of(context).pop('No'),
                               child: Text('No')),
-                          FlatButton(
-                              onPressed: () => Navigator.of(context).pop('Yes'),
+                          TextButton(
+                              onPressed: () =>SystemNavigator.pop(),
                               child: Text('Yes'))
                         ],
-                    )).then((value) =>
-                  {
-                  if(value.toString()=='Yes')
-                         confirmexit= true
-            });
-            return confirmexit;
+                    ),
+                  ),
+    );
+
+    return Future.value(false);
             // return true if the route to be popped
 }
 

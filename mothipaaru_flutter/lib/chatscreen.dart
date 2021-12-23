@@ -1,8 +1,6 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mothipaaru_flutter/loading.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
 final themeColor = Color(0xfff5a623);
@@ -12,24 +10,24 @@ final greyColor2 = Color(0xffE8E8E8);
 
 class ChatScreenPage extends StatefulWidget {
 
-final String chatroomID;final Users currentUser;final String secondUser;
-  ChatScreenPage({Key key,@required this.chatroomID,@required this.currentUser,@required this.secondUser}): super(key: key);
+final String chatroomID;final Users currentUser;final String? secondUser;
+  ChatScreenPage({Key? key,required this.chatroomID,required this.currentUser,required this.secondUser}): super(key: key);
   @override
   _ChatScreenPageState createState() => _ChatScreenPageState();
 }
 
 class _ChatScreenPageState extends State<ChatScreenPage> {
-  String peerId;
-  String peerAvatar;
-  String id;
+  String? peerId;
+  String? peerAvatar;
+  String? id;
 
-  List<QueryDocumentSnapshot> listMessage = new List.from([]);
+  List<DocumentSnapshot> listMessage = new List.from([]);
   int _limit = 20;
   final int _limitIncrement = 20;
-  String groupChatId;
-  bool isLoading;
+  String? groupChatId;
+  bool? isLoading;
   bool isShowSticker=false;
-  String imageUrl;
+  String? imageUrl;
 
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
@@ -66,6 +64,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
     isLoading = false;
     isShowSticker = false;
     imageUrl = '';
+    
   }
 
   @override
@@ -78,16 +77,25 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.secondUser),),
-      body: Column(children: <Widget>[
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(title: Text(widget.secondUser!),
+      actions: [IconButton(icon: Icon(Icons.call), onPressed: (){})]),
+      body:Container(
+        child: Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+        color: Colors.white12,
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(20),
+        topRight: Radius.circular(20))
+        ),
+        child: Column(children:<Widget>[
               Expanded(
               child:buildListMessage(),
               ),
-            // List of messages
-Container(
-  margin: EdgeInsets.all(15.0),
-  height: 61,
-  child: Row(children: [
+              Container(
+        margin: EdgeInsets.all(15.0),
+        height: 61,
+        child: Row(children: [
     Expanded(
     child: Container(
           decoration: BoxDecoration(
@@ -107,10 +115,12 @@ Container(
               Expanded(
                 child: TextField(
                   scrollPadding: EdgeInsets.all(5.0),
+                  textCapitalization: TextCapitalization.sentences,
                   controller: textEditingController,
                   decoration: InputDecoration(
-                      hintText: "Type Something...",
-                      border: InputBorder.none),
+                      hintText: "Type your message...",
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                  )
                 ),
               ),
               // IconButton(
@@ -119,9 +129,10 @@ Container(
               // ),
               IconButton(
                 icon: Icon(Icons.send),
-                onPressed: () {
+                onPressed: () async {
                     if (textEditingController.text.isNotEmpty) {
-                      FirebaseFirestore.instance.collection("chatroom").doc(widget.chatroomID).collection("messages").add({
+                      FocusScope.of(context).unfocus();
+                      await FirebaseFirestore.instance.collection("chatroom").doc(widget.chatroomID).collection("messages").add({
                         "sendBy": widget.currentUser.uid,
                         "message": textEditingController.text,
                         'timestamp': DateTime.now().millisecondsSinceEpoch
@@ -138,6 +149,11 @@ Container(
           ),
     ),
     ),
+],
+      )
+      ,)
+            
+            // List of messages
     // Expanded(  
     //         //padding: EdgeInsets.all(1),  
     //         child:TextField(
@@ -170,44 +186,49 @@ Container(
             
             ),
             // Input content
-             
-            ],
-
-        // Loading
-    ),
+      ),
     );
   }
 
-void onSendMessage(String content, int type) {
-    // type: 0 = text, 1 = image, 2 = sticker
-    if (content.trim() != '') {
-      textEditingController.clear();
+// void onSendMessage(String content, int type) {
+//     // type: 0 = text, 1 = image, 2 = sticker
+//     if (content.trim() != '') {
+//       textEditingController.clear();
 
-      var documentReference = FirebaseFirestore.instance
-          .collection('messages')
-          .doc(groupChatId)
-          .collection(groupChatId)
-          .doc(DateTime.now().millisecondsSinceEpoch.toString());
+//       var documentReference = FirebaseFirestore.instance
+//           .collection('messages')
+//           .doc(groupChatId)
+//           .collection(groupChatId)
+//           .doc(DateTime.now().millisecondsSinceEpoch.toString());
 
-      FirebaseFirestore.instance.runTransaction((transaction) async {
-        transaction.set(
-          documentReference,
-          {
-            'idFrom': id,
-            'idTo': peerId,
-            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-            'content': content,
-            'type': type
-          },
-        );
-      });
-      listScrollController.animateTo(0.0,
-          duration: Duration(milliseconds: 300), curve: Curves.easeOut);
-    } else {
-      CupertinoAlertDialog(content: Text("Nothing to Send"));
-    }
-  }
+//       FirebaseFirestore.instance.runTransaction((transaction) async {
+//         transaction.set(
+//           documentReference,
+//           {
+//             'idFrom': id,
+//             'idTo': peerId,
+//             'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+//             'content': content,
+//             'type': type
+//           },
+//         );
+//       });
+//       listScrollController.animateTo(0.0,
+//           duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+//     } else {
+//       CupertinoAlertDialog(content: Text("Nothing to Send"));
+//     }
+//   }
 
+Future<bool> checkIfCollectionExist(String collectionName) async {
+  var value = await FirebaseFirestore.instance
+      .collection("chatroom")
+      .doc(collectionName)
+      .collection("messages")
+      .limit(1)
+      .get();
+  return value.docs.isNotEmpty;
+}
 
   Widget buildLoading() {
     return Positioned(
@@ -215,60 +236,68 @@ void onSendMessage(String content, int type) {
     );
   }
 
-  Widget buildInput() {
-      return Container(
-    child: new Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        new TextField(
-            controller: textEditingController,
-            decoration: new InputDecoration(
-                hintText: 'Type something',
-            ),
-        ),
-        new RaisedButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  child: new AlertDialog(
-                      title: new Text('What you typed'),
-                      content: new Text(textEditingController.text),
-                  ),
-              );
-            },
-            child: new Text('DONE'),
-        ),
-      ],
-    ),
-  );
-  }
-
+ 
   Widget buildListMessage() {
+    // Future<bool> funcresp=checkIfCollectionExist(widget.chatroomID);
+    // Widget result=Container();
     return StreamBuilder(
               stream: FirebaseFirestore.instance
                   .collection('chatroom')
                   .doc(widget.chatroomID)
                   .collection("messages")
                   .orderBy('timestamp', descending: true)
-                  .limit(_limit)
                   .snapshots(),
               builder: (context, snapshot) {
+                final widgetdata=snapshot.data;
+                print(widgetdata);
+                     switch (snapshot.connectionState) {
+                      case ConnectionState.none:
+                        return ListView.builder(
+                    padding: EdgeInsets.all(10.0),
+                    itemBuilder: (context, index)=> MessageTile(message: 'No New Messages',sendByMe:true),
+                                        controller: listScrollController,
+                                      );
+                  case ConnectionState.waiting:
+                    return Center(
+                      child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(themeColor)));
+                              default:
+                // if(snapshot.hasError){
+                //   return ListView.builder(
+                //     padding: EdgeInsets.all(10.0),
+                //     itemBuilder: (context, index)=> MessageTile(message: 'No New Messages',sendByMe:true),
+                //                         controller: listScrollController,
+                //                       );
+                  
+                // }
+                if(snapshot.hasError){
+                   return ListView.builder(
+                    padding: EdgeInsets.all(10.0),
+                    itemBuilder: (context, index)=> MessageTile(message: 'No New Messages',sendByMe:true),
+                                        controller: listScrollController,
+                                      );
+                }
+                else{
                 if (!snapshot.hasData) {
                   return Center(
                       child: CircularProgressIndicator(
                           valueColor:
                               AlwaysStoppedAnimation<Color>(themeColor)));
                 } else {
-                  listMessage.addAll(snapshot.data.documents);
+                  //final List<DocumentSnapshot> documents = snapshot.data.docs;
+                  listMessage.addAll((snapshot.data ! as QuerySnapshot).docs);
                   return ListView.builder(
                     padding: EdgeInsets.all(10.0),
-                    itemBuilder: (context, index)=> MessageTile(message: snapshot.data.documents[index].data()["message"].toString(),sendByMe: snapshot.data.documents[index].data()["sendBy"]==widget.currentUser.uid),
-                                        itemCount: snapshot.data.documents.length,
+                    itemBuilder: (context, index)=> MessageTile(message: (snapshot.data ! as QuerySnapshot).docs[index]["message"].toString(),sendByMe: (snapshot.data ! as QuerySnapshot).docs[index]["sendBy"]==widget.currentUser.uid),
+                    //  itemBuilder: (context, index)=> MessageTile(message: snapshot.data.docs[index].data().toString(),sendByMe: snapshot.data.docs[index].data()==widget.currentUser.uid),
+                                        itemCount: (snapshot.data ! as QuerySnapshot).docs.length,
                                         reverse: true,
                                         controller: listScrollController,
                                       );
                                     }
-                                  },
+                     }
+                                  }}
                                 );
                       }
                     
@@ -306,7 +335,7 @@ void onSendMessage(String content, int type) {
   final String message;
   final bool sendByMe;
 
-  MessageTile({@required this.message, @required this.sendByMe});
+  MessageTile({required this.message, required this.sendByMe});
   @override
   Widget build(BuildContext context) {
     return Container(

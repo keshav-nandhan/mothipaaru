@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:mothipaaru_flutter/chat.dart';
 import 'package:mothipaaru_flutter/loading.dart';
@@ -10,7 +9,7 @@ import 'package:mothipaaru_flutter/users.model.dart';
 class NotificationsPage extends StatefulWidget {
   
 final Users currentUser;
-  NotificationsPage({Key key,@required this.currentUser}): super(key: key);
+  NotificationsPage({Key? key,required this.currentUser}): super(key: key);
    
   @override
   _NotificationsPageState createState() => _NotificationsPageState();
@@ -20,7 +19,7 @@ final Users currentUser;
 class _NotificationsPageState extends State<NotificationsPage> {
 
 List<NotificationModel> notificationitems=[];
-ScrollController listscrollcontroller;
+late ScrollController listscrollcontroller;
   @override
 void initState() {
   listscrollcontroller = ScrollController();
@@ -67,7 +66,7 @@ _scrollListener() {
   return Scaffold(
    appBar: AppBar(title: Text('Notifications'),
    actions: <Widget>[
-     FlatButton(  
+     TextButton(  
               onPressed: () async{
               Navigator.push(context, MaterialPageRoute(
               builder: (context) {
@@ -136,7 +135,7 @@ _scrollListener() {
     
      Widget _createListRow(NotificationModel matchreq) {
         if(matchreq.matchrequestedagainst==widget.currentUser.uid){
-          if(!matchreq.confirmed){
+          if(!matchreq.confirmed!){
           return new Padding(
             padding: EdgeInsets.all(4.0),
             child:Card(
@@ -156,7 +155,7 @@ _scrollListener() {
                    contentPadding: EdgeInsets.all(4.0),
                    title:  Container(child:Text(matchreq.matchrequestedbyUser.toString()+ " has Challenged a " + matchreq.sport.toString() + " match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
                   //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
-                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated)))),
+                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated!)))),
                 ),
             
               ButtonBar(
@@ -168,7 +167,7 @@ _scrollListener() {
                       //focusColor:  const Color(0x006200EE),
                       onPressed: () async {
                         bool insert=true;
-                        dynamic docid=matchreq.matchrequestedby+matchreq.matchrequestedagainst;
+                        dynamic docid=matchreq.matchrequestedby!+matchreq.matchrequestedagainst!;
                   FirebaseFirestore.instance.collection("register_match").doc(matchreq.docid).set({
                     'confirmed':true,
                     'dateupdated':DateTime.now().toString()
@@ -184,7 +183,7 @@ _scrollListener() {
                   
                       FirebaseFirestore.instance.collection("chatroom").get().then((data) => {
                      data.docs.forEach((doc) =>{
-                       if(doc.id.contains(matchreq.matchrequestedagainst)&&doc.id.contains(matchreq.matchrequestedby))
+                       if(doc.id.contains(matchreq.matchrequestedagainst!)&&doc.id.contains(matchreq.matchrequestedby!))
                        {
                           insert=false
                        }
@@ -239,20 +238,20 @@ _scrollListener() {
                 child:ListTile(
                  leading: CircleAvatar(
                    radius: 25.0,
-                   backgroundImage:NetworkImage(matchreq.matchrequestedagainstPhoto.toString()),
+                   backgroundImage:NetworkImage(matchreq.matchrequestedbyPhoto.toString()),
                    backgroundColor: Colors.transparent),
 
                   //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
                   contentPadding: EdgeInsets.all(5.0),
-                  title: Container(child:Text("You have Accepted a "+matchreq.sport+" match with "+matchreq.matchrequestedbyUser.toString()+ ". Now you can chat with "+matchreq.matchrequestedbyUser,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
-                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated)))),
+                  title: Container(child:Text("You have Accepted a "+matchreq.sport!+" match with "+matchreq.matchrequestedbyUser.toString()+ ". Now you can chat with "+matchreq.matchrequestedbyUser!,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
+                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated!)))),
                ),
               )
               );
           }
         }
         else if(matchreq.matchrequestedby==widget.currentUser.uid){
-          if(!matchreq.confirmed){
+          if(!matchreq.confirmed!){
       return new Card( 
                 elevation: 2,
           clipBehavior: Clip.hardEdge,
@@ -267,7 +266,7 @@ _scrollListener() {
 
           //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
           contentPadding: EdgeInsets.all(5.0),
-          subtitle: Text("You have Challenged "+matchreq.matchrequestedagainstUser.toString()+ " a "+matchreq.sport+" match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+          subtitle: Text("You have Challenged "+matchreq.matchrequestedagainstUser.toString()+ " a "+matchreq.sport!+" match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
         ),
       ),
       );
@@ -288,7 +287,7 @@ _scrollListener() {
 
           //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
           contentPadding: EdgeInsets.all(5.0),
-          subtitle: Text(matchreq.matchrequestedagainstUser.toString()+ " has Accepted your "+matchreq.sport+" match Challenge. Now you can chat with "+matchreq.matchrequestedagainstUser,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+          subtitle: Text(matchreq.matchrequestedagainstUser.toString()+ " has Accepted your "+matchreq.sport!+" match Challenge. Now you can chat with "+matchreq.matchrequestedagainstUser!,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
         ),
          ),
          );  

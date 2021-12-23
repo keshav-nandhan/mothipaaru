@@ -8,22 +8,22 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:250627111694:android:a8e87093adccf3ec45b55f",
+        "mobilesdk_app_id": "1:250627111694:android:0c855a4e0cc806dd45b55f",
         "android_client_info": {
           "package_name": "com.example.mothipaaru_flutter"
         }
       },
       "oauth_client": [
         {
-          "client_id": "250627111694-ai4ljcqenihdnhlu46dtm6ps05jm28uk.apps.googleusercontent.com",
+          "client_id": "250627111694-91rv76fev2pt1d7m3c48lvc0m6m1mc6f.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.mothipaaru_flutter",
-            "certificate_hash": "590d76be46ccc6d18504121f1d11439111d97b80"
+            "certificate_hash": "27b77da5ec8ac61bd9bd42005a46f01e6b06810e"
           }
         },
         {
-          "client_id": "250627111694-ug67ei71lpbp31i8fcdq6jkm2vu5glcs.apps.googleusercontent.com",
+          "client_id": "250627111694-6m92ueo3lu0qu5n64lb380m028qgqvhp.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -36,7 +36,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "250627111694-ug67ei71lpbp31i8fcdq6jkm2vu5glcs.apps.googleusercontent.com",
+              "client_id": "250627111694-6m92ueo3lu0qu5n64lb380m028qgqvhp.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
