@@ -11,8 +11,9 @@ class UserDetails{
     final String? username;
     final String distancebtw;
     final bool? isUseravailable;
-    final bool isFollowing;
+    int totalfollowers;
+    bool isfollowing;
     
-    UserDetails(this.uid,this.citylocation,this.dateupdated,this.descground,this.favouritesport,this.gender,this.imageurl,this.mailaddress,this.phonenumber,this.username,this.distancebtw,this.isUseravailable,this.isFollowing);
+    UserDetails(this.uid,this.citylocation,this.dateupdated,this.descground,this.favouritesport,this.gender,this.imageurl,this.mailaddress,this.phonenumber,this.username,this.distancebtw,this.isUseravailable,this.totalfollowers,this.isfollowing);
 }
 

@@ -9,7 +9,6 @@ import 'package:mothipaaru_flutter/match.dart';
 import 'package:mothipaaru_flutter/notifications.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'chat.dart';
 // import 'match.dart';
 // import 'notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -24,11 +23,6 @@ HomePage({Key? key, required this.userLoggedIn}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
-}
-
-enum PermissionGroup {
-  locationAlways,
-  locationWhenInUse
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin<HomePage>{
@@ -47,9 +41,11 @@ TextEditingController mobileNumberController = TextEditingController();
 TextEditingController commentsController = TextEditingController();
 bool searchusers=true;
 
-List<UserDetails>? matchedUsers;
+List<UserDetails> matchedUsers=[];
 
   var dropdownkey;
+
+
 
 @override
 void initState() {
@@ -79,29 +75,14 @@ setSelectedRadio(int val) {
     super.dispose();
   }
 
-  //   @override
-  // void initState() {
-  //   pageController = PageController(); //can change initital page
-  //   super.initState();
-  // }
 
-// onPageChanged(int pageIndex) {
-//     setState(() {
-//       this._currentIndex = pageIndex;
-//     });
-//   }
+  
 
   @override
   Widget build(BuildContext context) {
   
   final Users currentUser=widget.userLoggedIn;
-  
-  //  final List<Widget> views=[
-  //    Matchfinder(userLoggedIn: currentUser),
-  //    Notifications(),
-  //    Chatwindow()
-  //  ];
-  
+
      final List<String> items=<String>[
           "Football",
           "Basketball",
@@ -115,17 +96,16 @@ setSelectedRadio(int val) {
         child:Scaffold(appBar:AppBar(title:Text('Mothi Paaru'),
          elevation: 15.0, 
          actions: <Widget>[
-             TextButton(
+             IconButton(
+               icon: Icon(Icons.logout),
               onPressed: () async{
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
-                //GoogleSignInAuthentication googleAuth =
                 Navigator.push(context, MaterialPageRoute(
               builder: (context) {
                 return LoginPage();                      
                 }));
               },
-              child:  Icon(Icons.login_outlined),
             ),
         ],
        ),
@@ -150,15 +130,15 @@ body:Container(
           
  // Add TextFormFields and RaisedButton here.
  TextFormField(
-
+  keyboardType: TextInputType.number,
+  inputFormatters:  <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
  controller: mobileNumberController,
  decoration: InputDecoration(
  border: InputBorder.none,
  contentPadding: EdgeInsets.all(15.0),
  filled: true,
  fillColor: Colors.black12,
- labelText: 'Enter Mobile Number'
-     
+ labelText: 'Enter Mobile Number',
     ),
    // The validator receives the text that the user has entered.
    validator: (value) {
@@ -233,10 +213,14 @@ TextFormField(
    
      // Validate returns true if the form is valid, otherwise false.
     if (_formKey.currentState!.validate()) {
+
+    var following=   FirebaseFirestore.instance.collection("Users").doc(widget.userLoggedIn.uid).collection("Following").snapshots();
     await _getCurrentLocation();
     matchedUsers=matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString(),commentsController.text.toString());
-       Future.delayed(Duration(milliseconds: 1000)).then((value) => {
-       if(matchedUsers!.length>0)
+
+       Future.delayed(Duration(milliseconds: 4000)).then((value) => {
+       matchedUsers=setfollowers(matchedUsers,following),
+       if(matchedUsers.length>0)
        {
          Navigator.push(context, MaterialPageRoute(
               builder: (context) {
@@ -330,29 +314,7 @@ Align(
      
      );
   }        
-      // PageView(
-      //   children: views,
-      //   controller: pageController,
-      //   onPageChanged: onPageChanged,
-      //   physics: NeverScrollableScrollPhysics()
-      // ),
-      
-      // //body:views[_currentIndex],
-      // bottomNavigationBar: CupertinoTabBar(
-      //   activeColor: Theme.of(context).accentColor,
-      //   currentIndex: _currentIndex,
-      //   onTap: (int index) {
-      // pageController.animateToPage(index,duration: Duration(milliseconds: 400),curve: Curves.easeInOut);    
-      //   },
-      //   items: allDestinations.map((Modules destination) {
-      //     return BottomNavigationBarItem(
-      //       icon: Icon(destination.icon),
-      //       backgroundColor: destination.color,
-      //       label: destination.title
-      //     );
-      //   }).toList(),
-      // ),
-          _getCurrentLocation() async {
+              _getCurrentLocation() async {
           
             //final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
             //GeolocationStatus locationpermissionstatus=await geolocator.checkGeolocationPermissionStatus();
@@ -381,7 +343,7 @@ Align(
         }
                        
         List<UserDetails> matchfinderfunc(String? gender,String? sport,Users userLoggedIn,String cityLocation,String mobilenumber,String desccomments) {
-        List<UserDetails> listDataSource=<UserDetails>[];var opponentsfound;var nearbyplayer;var totalfollowers;var isfollowing;
+        List<UserDetails> listDataSource=<UserDetails>[];var opponentsfound;var nearbyplayer;
            FirebaseFirestore.instance.collection('register_team').doc(userLoggedIn.uid.toString()).set({
                   'uid':userLoggedIn.uid,
                   'dateupdated':DateTime.now().toString(),
@@ -400,10 +362,8 @@ Align(
                 data.docs.forEach((doc) =>{
                 if(doc['uid']!=userLoggedIn.uid)
                 {
-                    isfollowing=followCheck(doc['uid'], widget.userLoggedIn.uid),
                     nearbyplayer =distancebetweenplayers(doc['citylocation'].toString(),cityLocation),
-                    //totalfollowers=countFollowers(doc['uid']),
-                    opponentsfound=new UserDetails(doc['uid'], doc['citylocation'], DateTime.now().toString(), doc['descground'], doc['favouritesport'], doc['gender'], doc['imageurl'], doc['mailaddress'], doc['phonenumber'], doc['username'],nearbyplayer,doc['isUseravailable'],isfollowing),
+                    opponentsfound=new UserDetails(doc['uid'], doc['citylocation'], DateTime.now().toString(), doc['descground'], doc['favouritesport'], doc['gender'], doc['imageurl'], doc['mailaddress'], doc['phonenumber'], doc['username'],nearbyplayer,doc['isUseravailable'],0,false),
                     listDataSource.add(opponentsfound),
                 }
                 
@@ -416,52 +376,17 @@ Align(
                               //  Future<bool> backtoLogin() async{
                               //       return Future.value(true);// return true if the route to be popped
                               // }
-//  countFollowers(String? userid){
-//    if (userid ==null || userid=="") return 0;
-//    else if(userid!=""){
-//    var followers=FirebaseFirestore.instance.collection("Users").doc(userid).collection("FollowedBy").snapshots().listen((value) =>{  value.docs.length});
-//    return followers;
-//    }
-//}
- 
- followCheck(String? userid,String loggedIn){
-   bool following=false;
-   if (userid ==null || loggedIn=="") following=false;
-   else
-   {
-   FirebaseFirestore.instance.collection("Users").doc(loggedIn).collection("Following").snapshots().listen((data)=> {
-   data.docs.forEach((element) { 
-     if(element['uid']==userid)
-     {
-      following=true;
-     }
-   })  
-   });
-   return following;
-   }
- }
+
                                      
               distancebetweenplayers(String opponentlocation, String usercityLocation){
                 
               double result=Geolocator.distanceBetween(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[0].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
               //Lat: 37.4219983, Long: -122.084
+              result=result/1000;
               //double result=calculateDistance(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[0].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
               return result.toStringAsFixed(2).toString()+" km";
               }
               
-              //  double calculateDistance(lat1,lon1,lat2,lon2){
-              // // final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-               
-              // // geolocator.distanceBetween(lat1,lon1,lat2,lon2).then((value){
-              // //   return value.toString();
-              // // });
-                
-              //   var p = 0.017453292519943295;
-              //   var c = cos;
-              //   var a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
-              //   return 12742 * asin(sqrt(a));
-              //   }
-
   showAlertDialog(BuildContext context) {
     Widget okButton = TextButton(  
     child: Text("OK"),  
@@ -534,6 +459,28 @@ Future<bool> _willConfirmExit() async {
     return Future.value(false);
             // return true if the route to be popped
 }
+
+  setfollowers(List<UserDetails> matchedUsers, Stream<QuerySnapshot<Map<String, dynamic>>> following) {
+
+
+
+    for(int i=0;i<matchedUsers.length;i++){
+
+      FirebaseFirestore.instance.collection("Users").doc(matchedUsers[i].uid).collection("FollowedBy").snapshots().listen((value) =>{ 
+     matchedUsers[i].totalfollowers= value.docs.length
+     });
+
+      following.listen((event) =>{
+  for (var item in event.docs) {
+    if(matchedUsers[i].uid==item.id)
+    {
+      matchedUsers[i].isfollowing=true
+    }
+  }
+});
+    }
+    return matchedUsers;
+  }
 
 // class Modules {
 //   const Modules(this.title, this.icon, this.color);

@@ -85,22 +85,21 @@ Widget databindUsers (BuildContext context,List<UserDetails> matchedUsers) {
 
 _createListRow(UserDetails matchedUser,Users userLoggedIn) {
       
-      var followers;
      // FirebaseFirestore.instance.collection("Users").doc(matchedUser.uid).collection("FollowedBy").doc().get().then((value) =>followers=value.["id"]);
              _animationController =new AnimationController(
         vsync: this, duration: Duration(milliseconds: 1300));
 
-      animation = Tween(begin: 0,end: 60).animate(_animationController)..addListener((){
-        setState(() {
+      // animation = Tween(begin: 0,end: 60).animate(_animationController)..addListener((){
+      //   setState(() {
             
 
-        });
-      });
-      sizeAnimation = Tween(begin: 0,end: 1).animate(CurvedAnimation(parent: _animationController,curve: Curves.fastOutSlowIn))..addListener((){
-      setState(() {
+      //   });
+      // });
+      // sizeAnimation = Tween(begin: 0,end: 1).animate(CurvedAnimation(parent: _animationController,curve: Curves.fastOutSlowIn))..addListener((){
+      // setState(() {
 
-        });
-      });
+      //   });
+      // });
     // _animationController.addListener(() {
     //   setState(() {
       
@@ -120,7 +119,7 @@ _createListRow(UserDetails matchedUser,Users userLoggedIn) {
                   leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
                   title: Text(matchedUser.username.toString()),
                   subtitle: Text("About :"+matchedUser.descground.toString(),style: TextStyle(color: Colors.black.withOpacity(0.6)),),  
-                  //trailing: Column(children:[Icon(Icons.people), Text(matchedUser.followers==0?"0":matchedUser.followers.toString())])
+                  trailing: Column(children:[Icon(Icons.people), Text(matchedUser.totalfollowers==0?"0":matchedUser.totalfollowers.toString())])
                 ),
               Padding(padding:EdgeInsets.all(2.0), child: Text("Contact :" +matchedUser.phonenumber.toString()),),
               Center(child: Text(matchedUser.favouritesport.toString())),
@@ -132,35 +131,29 @@ _createListRow(UserDetails matchedUser,Users userLoggedIn) {
                  Align(
                    alignment: Alignment.bottomLeft,
                   child: GestureDetector(
-                  onTap: () {
+                  onTap: () async{
+                    setState(() {
               _animationController.forward();
-              if(!matchedUser.isFollowing){
-                if(followers==null){
+              if(!matchedUser.isfollowing){
                   FirebaseFirestore.instance.collection("Users").doc(matchedUser.uid).collection("FollowedBy").doc(widget.userLoggedIn.uid).set({});
                   FirebaseFirestore.instance.collection("Users").doc(widget.userLoggedIn.uid).collection("Following").doc(matchedUser.uid).set({});
+                  matchedUser.isfollowing=true;
                 }
                 else{
-                  if(followers.toString().contains(widget.userLoggedIn.uid.toString()))
-                  {
-
-                  }
-                  else{
-                    FirebaseFirestore.instance.collection("register_team").doc(matchedUser.uid).set({
-                    'followers':followers.toString()+","+widget.userLoggedIn.uid,
-                  },SetOptions(merge: true));
-                  }
-                }
-
-              }
-                
+                  FirebaseFirestore.instance.collection("Users").doc(matchedUser.uid).collection("FollowedBy").doc(widget.userLoggedIn.uid).delete();
+                  FirebaseFirestore.instance.collection("Users").doc(widget.userLoggedIn.uid).collection("Following").doc(matchedUser.uid).delete();
+                  matchedUser.isfollowing=false;
+                  }        
+                    });
+              
                   },
                   child: AnimatedContainer(
                 decoration: BoxDecoration(
-                    color:  matchedUser.isFollowing?Colors.green[600]:Colors.blueAccent,
+                    color:  matchedUser.isfollowing?Colors.green[600]:Colors.blueAccent,
                     borderRadius: BorderRadius.circular(100.0),
                     boxShadow: [
                       BoxShadow(
-                        color: matchedUser.isFollowing?Colors.green[600]!:Colors.blueAccent,
+                        color: matchedUser.isfollowing?Colors.green[600]!:Colors.blueAccent,
                         blurRadius: 21, // soften the shadow
                         spreadRadius: -15, //end the shadow
                         offset: Offset(
@@ -180,7 +173,7 @@ _createListRow(UserDetails matchedUser,Users userLoggedIn) {
                 child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      (!matchedUser.isFollowing)
+                      (!matchedUser.isfollowing)
                           ? AnimatedContainer(
                               duration: Duration(milliseconds: 400),
                               curve: Curves.easeInCirc,
@@ -188,20 +181,20 @@ _createListRow(UserDetails matchedUser,Users userLoggedIn) {
                           : Container(),
                       AnimatedSize(
                         duration: Duration(milliseconds: 600),
-                        child: matchedUser.isFollowing ? SizedBox(width: 10.0) : Container(),
+                        child: matchedUser.isfollowing ? SizedBox(width: 10.0) : Container(),
                       ),
                       AnimatedSize(
                         duration: Duration(milliseconds: 200),
-                        child: matchedUser.isFollowing ? Text("Following") : Text("Follow") ,
+                        child: matchedUser.isfollowing ? Text("Following") : Text("Follow") ,
                       ),
                       AnimatedSize(
                         duration: Duration(milliseconds: 200),
-                        child: matchedUser.isFollowing ? Icon(Icons.done) : Icon(Icons.add),
+                        child: matchedUser.isfollowing ? Icon(Icons.done) : Icon(Icons.add),
                       ),
                       AnimatedSize(
                         alignment: Alignment.topLeft,
                         duration: Duration(milliseconds: 600),
-                        child: matchedUser.isFollowing ? SizedBox(width: 10.0) : Container(),
+                        child: matchedUser.isfollowing ? SizedBox(width: 10.0) : Container(),
                       ),
                       // AnimatedSize(
                       //   vsync: this,
