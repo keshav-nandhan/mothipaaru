@@ -37,9 +37,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
     if (listScrollController.offset >=
             listScrollController.position.maxScrollExtent &&
         !listScrollController.position.outOfRange) {
-      print("reach the bottom");
       setState(() {
-        print("reach the bottom");
         _limit += _limitIncrement;
       });
     }
