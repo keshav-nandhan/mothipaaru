@@ -1,21 +1,14 @@
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:mothipaaru_flutter/chat.dart';
-import 'package:mothipaaru_flutter/login.dart';
 import 'package:mothipaaru_flutter/match.dart';
-import 'package:mothipaaru_flutter/notifications.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
-import 'package:permission_handler/permission_handler.dart';
-// import 'match.dart';
-// import 'notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mothipaaru_flutter/userDetails.model.dart';
 import 'users.model.dart';
-
 class HomePage extends StatefulWidget {
 
 final Users userLoggedIn;
@@ -26,57 +19,56 @@ HomePage({Key? key, required this.userLoggedIn}) : super(key: key);
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin<HomePage>{
+  final String title="HomePage";
+  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  static FirebaseAnalyticsObserver observer =
+      FirebaseAnalyticsObserver(analytics: analytics);
   
-late PageController pageController;
 Position? _currentPosition;
-late bool grantpermission;
+LocationPermission?  grantpermission;
 UserDetails? matchUser;
 final _formKey = GlobalKey<FormState>();
 
 // Declare this variable
 int? selectedRadio;
 String? _myActivity="";
-String? _genderValue="";
+String? _genderValue="Male";
+int _selectedIndex = 0;
 TextEditingController mobileNumberController = TextEditingController();
 TextEditingController commentsController = TextEditingController();
 bool searchusers=true;
 
 List<UserDetails> matchedUsers=[];
 
-  var dropdownkey;
-
-
-
+var dropdownkey;
 @override
 void initState() {
   super.initState();
+  generatetoken();
   selectedRadio = 0;
 }
- 
+  void dispose() {
+    super.dispose();
+  }
+
  setSelectedRadioTile(String? val) {
     setState(() {
       _genderValue = val;
     });
   }
- 
- 
-// Changes the selected value on 'onChanged' click on each radio button
-setSelectedRadio(int val) {
-  setState(() {
-    selectedRadio = val;
+generatetoken() async{
+  //FirebaseMessaging.instance.getInitialMessage();
+  FirebaseMessaging.onMessage.listen((message) { 
+    print(message.notification?.body);
+    print(message.notification?.title);
   });
-}
+ FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(alert: true,badge: true,sound: true);
+ 
+    }
 
-
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+ 
+ final _scaffoldKey = GlobalKey<ScaffoldState>();
     @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
-  }
-
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -93,22 +85,8 @@ setSelectedRadio(int val) {
      return WillPopScope(
        onWillPop: _willConfirmExit,
        
-        child:Scaffold(appBar:AppBar(title:Text('Mothi Paaru'),
-         elevation: 15.0, 
-         actions: <Widget>[
-             IconButton(
-               icon: Icon(Icons.logout),
-              onPressed: () async{
-                await GoogleSignIn().signOut();
-                await FirebaseAuth.instance.signOut();
-                Navigator.push(context, MaterialPageRoute(
-              builder: (context) {
-                return LoginPage();                      
-                }));
-              },
-            ),
-        ],
-       ),
+        child:
+        Scaffold(
       key: _scaffoldKey,
 
 body:Container(
@@ -135,7 +113,7 @@ body:Container(
  controller: mobileNumberController,
  decoration: InputDecoration(
  border: InputBorder.none,
- contentPadding: EdgeInsets.all(15.0),
+ contentPadding: EdgeInsets.all(10.0),
  filled: true,
  fillColor: Colors.black12,
  labelText: 'Enter Mobile Number',
@@ -143,8 +121,9 @@ body:Container(
    // The validator receives the text that the user has entered.
    validator: (value) {
      if (value!.isEmpty) {
-     return 'Please enter valid number';
+     return 'Please enter valid Number';
      }
+   
      return null;
    },
  ), 
@@ -153,7 +132,7 @@ TextFormField(
   controller: commentsController,
  decoration: InputDecoration(
      border: InputBorder.none,
-     contentPadding: EdgeInsets.all(15.0),
+     contentPadding: EdgeInsets.all(10.0),
      filled: true,
      fillColor: Colors.black12,
      labelText: 'Enter Comments like desc ground/yourself'
@@ -170,24 +149,26 @@ TextFormField(
     child:Column(
       children: [
    RadioListTile(
+    toggleable: true,
     value: "Male",
     groupValue: _genderValue,
     title: Text("Male"),
     onChanged: (dynamic val) {
  setSelectedRadioTile(val);
     },
-    activeColor: Colors.brown,
+    activeColor: Colors.black,
     selected: true,
   ),
  
   RadioListTile(
+    toggleable: true,
     value: "Female",
     groupValue: _genderValue,
     title: Text("Female"),
     onChanged: (dynamic val) {
  setSelectedRadioTile(val);
     },
-    activeColor: Colors.brown,
+    activeColor: Colors.black,
     selected: false,
   ),],)
  ),
@@ -202,27 +183,35 @@ TextFormField(
               }).toList(),
                onChanged: (String? newValue) { 
                 setState(() {
-                  _myActivity = newValue!;
+                  _myActivity = newValue;
                 });
               },
    ),
    
  ElevatedButton(
    onPressed: () async {
-     grantpermission=await Permission.locationWhenInUse.isGranted;
-   
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (serviceEnabled) {
+     grantpermission = await Geolocator.checkPermission();
+     //grantpermission=await Permission.locationWhenInUse.isGranted;
      // Validate returns true if the form is valid, otherwise false.
+     if (grantpermission == LocationPermission.denied) {
+       grantpermission = await Geolocator.requestPermission();
+     }
+     else{
     if (_formKey.currentState!.validate()) {
 
     var following=   FirebaseFirestore.instance.collection("Users").doc(widget.userLoggedIn.uid).collection("Following").snapshots();
     await _getCurrentLocation();
     matchedUsers=matchfinderfunc(_genderValue,_myActivity,widget.userLoggedIn,_currentPosition.toString(),mobileNumberController.text.toString(),commentsController.text.toString());
 
-       Future.delayed(Duration(milliseconds: 4000)).then((value) => {
+       Future.delayed(Duration(milliseconds: 500)).then((value) => {
+       
        matchedUsers=setfollowers(matchedUsers,following),
+
        if(matchedUsers.length>0)
        {
-         Navigator.push(context, MaterialPageRoute(
+         Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
                 return Matchfinder(userLoggedIn:currentUser,usersMatchData:matchedUsers);                      
                 })
@@ -231,15 +220,7 @@ TextFormField(
        else{
          if((_currentPosition.toString()=="")||(_currentPosition.toString()=="null"))
          {
-           if(!grantpermission)
-           {
-           Permission.locationWhenInUse.request(),
-           }
-           else{
-         
-           showLocationDialog(context)
-           }
-
+        
          }
          else{
           showAlertDialog(context)
@@ -249,68 +230,28 @@ TextFormField(
        });
 
       }
+  }
+     }
+     else{
+ showLocationDialog(context);
+     }
+   
     },
        child: Text('Search'),
+       style: ElevatedButton.styleFrom(
+          primary: Color.fromARGB(255, 15, 66, 61),
+       ),
   ),
  
 ]),
 ),
-Flexible(
-  child:Row(
-    crossAxisAlignment: CrossAxisAlignment.baseline,
-    textBaseline: TextBaseline.alphabetic,
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-    children: [
-      Align(
- alignment: Alignment.bottomLeft,
- child:FloatingActionButton(
-    mini: true,
-    heroTag:"notifybtn",
-  backgroundColor: Colors.transparent,
-  foregroundColor: Colors.black,
-  onPressed: () {
-    Navigator.push(context, MaterialPageRoute(
-         builder: (context) {
-           return NotificationsPage(currentUser:widget.userLoggedIn);                      
-           }));
-    // Respond to button press
-  },
-  child: Icon(Icons.notifications_active_sharp),
-),
-
-),
-Align(
-      alignment: Alignment.bottomRight,
-     child:FloatingActionButton(
-       heroTag: "chatbtn",
-        mini: true,
-      backgroundColor: Colors.transparent,
-      foregroundColor: Colors.black,
-      onPressed: () {
-        Navigator.push(context, MaterialPageRoute(
-             builder: (context) {
-               return Chatwindow(currentUser:widget.userLoggedIn);                      
-               }));
-      },
-      child: Icon(Icons.messenger_outline_rounded),
-    ),
  
-)
-    ],
-    ),
-  
-),
-
-    
-
-
-  
 ]
 ),
 
 ),
-)
+ 
+),
      
      );
   }        
@@ -482,27 +423,5 @@ Future<bool> _willConfirmExit() async {
     return matchedUsers;
   }
 
-// class Modules {
-//   const Modules(this.title, this.icon, this.color);
-//   final String title;
-//   final IconData icon;
-//   final MaterialColor color;
-// }
-
-// const List<Modules> allDestinations = <Modules>[
-//   Modules('Match', Icons.search, Colors.teal),
-//   Modules('Notification', Icons.notifications, Colors.cyan),
-//   Modules('Chat', Icons.chat, Colors.orange),
-// ];
-
-
-// class Matchfinder extends StatefulWidget {
-  
-// final Users userLoggedIn;
-//   Matchfinder({Key key, @required this.userLoggedIn}) : super(key: key);  
-   
-//   @override
-// _MatchfinderState createState() => _MatchfinderState();
-// }
 
 }

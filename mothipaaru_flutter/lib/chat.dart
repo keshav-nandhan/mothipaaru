@@ -62,8 +62,8 @@ setState(() {
       @override
       Widget build(BuildContext context) {
       return Scaffold(
-      appBar: AppBar(title: Text('Chats'),
-      actions: [IconButton(icon: Icon(Icons.search), onPressed: (){})]),
+      // appBar: AppBar(title: Text('Chats'),
+      // actions: [IconButton(icon: Icon(Icons.search), onPressed: (){})]),
       //body:databindUsers(context,widget.currentUser,this.chatwithPeople)
       body: FutureBuilder(
       future: futureloaderdelay(),//it will return the future type result
@@ -124,6 +124,6 @@ setState(() {
               }
       
         futureloaderdelay() {
-            return Future.delayed(Duration(milliseconds: 2000),);
+            return Future.delayed(Duration(milliseconds: 1000),);
         }
 }

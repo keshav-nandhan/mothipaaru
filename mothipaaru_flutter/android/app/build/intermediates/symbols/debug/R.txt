@@ -319,6 +319,7 @@ int attr windowNoTitle 0x7f020131
 int bool abc_action_bar_embed_tabs 0x7f030000
 int bool abc_allow_stacked_button_bar 0x7f030001
 int bool abc_config_actionMenuItemAllCaps 0x7f030002
+int bool com_crashlytics_RequireBuildId 0x7f030003
 int color abc_background_cache_hint_selector_material_dark 0x7f040000
 int color abc_background_cache_hint_selector_material_light 0x7f040001
 int color abc_btn_colored_borderless_text_material 0x7f040002

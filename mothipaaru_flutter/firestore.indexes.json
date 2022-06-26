@@ -1,0 +1,27 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "register_team",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "citylocation",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "favouritesport",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "gender",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "uid",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

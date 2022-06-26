@@ -64,18 +64,18 @@ _scrollListener() {
   @override
   Widget build(BuildContext context) {
   return Scaffold(
-   appBar: AppBar(title: Text('Notifications'),
-   actions: <Widget>[
-     TextButton(  
-              onPressed: () async{
-              Navigator.push(context, MaterialPageRoute(
-              builder: (context) {
-                return Chatwindow(currentUser:widget.currentUser);                      
-                }));
-              },
-              child:  Icon(Icons.messenger),
-            ),],
-   ),
+  //  appBar: AppBar(title: Text('Notifications'),
+  //  actions: <Widget>[
+  //    TextButton(  
+  //             onPressed: () async{
+  //             Navigator.push(context, MaterialPageRoute(
+  //             builder: (context) {
+  //               return Chatwindow(currentUser:widget.currentUser);                      
+  //               }));
+  //             },
+  //             child:  Icon(Icons.messenger),
+  //           ),],
+  //  ),
     body: FutureBuilder(
       future: futureloaderdelay(),//it will return the future type result
             builder: (context, snapshot) {
@@ -106,7 +106,7 @@ _scrollListener() {
       //]);
       }
     }
-    else notice.add(Text("No New  Notifications Pending"));
+    else notice.add(Card(child: Text("No New  Notifications Pending")));
     return notice;
     }
       
@@ -147,20 +147,23 @@ _scrollListener() {
             children: <Widget>[
               //CircleAvatar(backgroundImage: AssetImage(matchedUser.imageurl.toString())),
                
-               ListTile(
-                 leading: CircleAvatar(
-                   radius: 25.0,
-                   backgroundImage:NetworkImage(matchreq.matchrequestedbyPhoto.toString()),
-                   backgroundColor: Colors.transparent),
-                   contentPadding: EdgeInsets.all(4.0),
-                   title:  Container(child:Text(matchreq.matchrequestedbyUser.toString()+ " has Challenged a " + matchreq.sport.toString() + " match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
-                  //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
-                  subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated!)))),
-                ),
+               Card(
+                 child: ListTile(
+                   leading: CircleAvatar(
+                     radius: 25.0,
+                     backgroundImage:NetworkImage(matchreq.matchrequestedbyPhoto.toString()),
+                     backgroundColor: Colors.transparent),
+                     contentPadding: EdgeInsets.all(4.0),
+                     title:  Container(child:Text(matchreq.matchrequestedbyUser.toString()+ " has Challenged a " + matchreq.sport.toString() + " match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)),
+                    //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
+                    subtitle: Container(child:Text(DateFormat.yMMMd().format(DateTime.parse(matchreq.dateupdated!)))),
+                  ),
+               ),
             
               ButtonBar(
                   alignment: MainAxisAlignment.end,
                   children: [
+                    Text("Do you want to accept?"),
                     //MaterialButton(onPressed: null)
                     ElevatedButton(
                       //textColor: const Color(0xFFB71C1C),
@@ -266,7 +269,7 @@ _scrollListener() {
 
           //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
           contentPadding: EdgeInsets.all(5.0),
-          subtitle: Text("You have Challenged "+matchreq.matchrequestedagainstUser.toString()+ " a "+matchreq.sport!+" match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+          subtitle: Text("You have Challenged "+matchreq.matchrequestedagainstUser.toString()+ "for a "+matchreq.sport!+" match" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
         ),
       ),
       );
@@ -313,7 +316,7 @@ _scrollListener() {
       }
       
       futureloaderdelay() {
-            return Future.delayed(Duration(milliseconds: 2000),);
+            return Future.delayed(Duration(milliseconds: 1000),);
         }
                   
 

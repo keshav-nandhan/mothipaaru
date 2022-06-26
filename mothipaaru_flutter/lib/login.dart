@@ -1,83 +1,102 @@
 
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mothipaaru_flutter/first.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
-import 'home.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
-
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
+ class LoginPage extends StatefulWidget {
+  LoginPage({
+    Key? key,
+    required this.title,
+    required this.analytics,
+    required this.observer,
+  }) : super(key: key);
 
- class LoginPage extends StatelessWidget {
+
+   final String title;
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
    @override
-   Widget build(BuildContext context) {
-     return InteractiveViewer(child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [Colors.redAccent, Colors.teal]),
-        ),
-       //child: MyButton(),
-       child:ListView(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Row(children: <Widget>[
-                  VerticalText(),
-                  TextLogin(),
-                ]),
-                MyButton(),
-              ],
-            ),
-          ],
-        ),
-     ),
-     );
-   }
+  _LoginPageState createState() => _LoginPageState();
  }
 
- class MyButton extends StatelessWidget {
-   
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Padding(
-      padding: const EdgeInsets.only(top: 200, right: 50, left: 125),
-      child: Container(
-        alignment: Alignment.bottomRight,
-        height: 50,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue[300]!,
-              blurRadius: 10.0, // has the effect of softening the shadow
-              spreadRadius: 1.0, // has the effect of extending the shadow
-              offset: Offset(
-                5.0, // horizontal, move right 10
-                5.0, // vertical, move down 10
-              ),
+ class _LoginPageState extends State<LoginPage> {
+
+  void setMessage(String message) {
+    setState(() {
+    });
+  }
+
+   @override
+
+   Widget build(BuildContext context) {
+     return Scaffold(
+      backgroundColor: const Color(0xFFEEEEEE),
+      body:
+     Container(
+        child:Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 60),
+          child: const Text(
+            "MothiPaaru",
+            style: TextStyle(
+              fontSize: 35,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
+          ),
         ),
-      child:TextButton(
-      // splashColor: Colors.white,
+        SizedBox(
+          height: 150,
+          child: Stack(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(right: 15),
+                height: 80,
+                width: 80,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green[200]!.withOpacity(0.5),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Color(0xff1bccba),
+                      Color(0xff22e2ab),
+                    ],
+                  ),
+                ),
+                child: GestureDetector(
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_forward_outlined),
+                    color: Colors.white,
+                    iconSize: 32,
+                     onPressed: () async {
+    try {
       
-      onPressed: () async {
-    
       UserCredential userCredential;
       if (kIsWeb) {
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
         googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
         userCredential = await _auth.signInWithPopup(googleProvider);
       } else {
-        //final GoogleSignInAccount  googleUser=await GoogleSignIn().signIn();
         final GoogleSignInAccount? googleUser= await GoogleSignIn().signIn();
   
         final GoogleSignInAuthentication googleAuth =await googleUser!.authentication;
@@ -100,98 +119,83 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
                   },SetOptions(merge:true));
               Navigator.push(context, MaterialPageRoute(
               builder: (context) {
-                return HomePage(userLoggedIn:currentuser);                      
+                return FirstPage(userLoggedIn:currentuser);                      
                 }));
+
+} on FirebaseAuthException catch (e) {
+  FirebaseCrashlytics.instance.log(e.message.toString());
+    }
+    
       },
-       child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Sign-In with Google',
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward,
-                color: Colors.lightBlueAccent,
               ),
             ],
-       ),
-      // child: Padding(
-      //   padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-      //   child: Row(
-      //     mainAxisSize: MainAxisSize.min,
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: <Widget>[
-      //       Padding(
-      //         padding: const EdgeInsets.only(left: 10),
-      //         child: Text(
-      //           'Sign in with Google',
-      //           style: TextStyle(
-      //             fontSize: 20,
-      //             color: Colors.grey,
-      //           ),
-      //         ),
-      //       )
-      //     ],
-      //   ),
-      // ),
-     ),
-     ),
-      ),
-    );
-  }
-}
-
-class VerticalText extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 60, left: 10),
-      child: RotatedBox(
-          quarterTurns: -1,
-          child: Text(
-            'Mothi Paaru',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 38,
-              fontWeight: FontWeight.w900,
-            ),
-          )),
-    );
-  }
-}
-
-class TextLogin extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 30.0, left: 10.0),
-      child: Container(
-        //color: Colors.green,
-        height: 200,
-        width: 200,
-        child: Column(
-          children: <Widget>[
-            Container(
-              height: 60,
-            ),
-            Center(
-              child: Text(
-                'SHOW WHO YOU ARE TO THIS WORLD!',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+            
+          ),
         ),
+        
+        Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Sign In With Google")
+          ],
+        )
+      ],
+    ),
       ),
-    );
-  }
-}
+     
+     );
+   }
+ }
+
+
+// class VerticalText extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.only(top: 60, left: 10),
+//       child: RotatedBox(
+//           quarterTurns: -3,
+//           child: Text(
+//             'PISTHA',
+//             style: TextStyle(
+//               color: Colors.white,
+//               fontSize: 38,
+//               fontWeight: FontWeight.w900,
+//             ),
+//           )),
+//     );
+//   }
+// }
+
+// class TextLogin extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.only(top: 30.0, left: 10.0),
+//       child: Container(
+//         //color: Colors.green,
+//         height: 200,
+//         width: 200,
+//         child: Column(
+//           children: <Widget>[
+//             Container(
+//               height: 60,
+//             ),
+//             Center(
+//               child: Text(
+//                 'SHOW WHO YOU ARE TO THIS WORLD!',
+//                 style: TextStyle(
+//                   fontSize: 24,
+//                   color: Colors.white,
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 

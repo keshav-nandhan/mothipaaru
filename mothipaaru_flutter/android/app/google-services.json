@@ -15,11 +15,27 @@
       },
       "oauth_client": [
         {
-          "client_id": "250627111694-7rvvjs00sv6ag0vg9mkbc1sequevooga.apps.googleusercontent.com",
+          "client_id": "250627111694-3tuubl63jedpav1bam5uve533bhlr590.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pistha.mothipaaru",
+            "certificate_hash": "2f4e22774466febd70753c60ef645b5612aab49a"
+          }
+        },
+        {
+          "client_id": "250627111694-7t1jlrn45ss4kkeegcrcekjffvagobkj.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.pistha.mothipaaru",
             "certificate_hash": "27b77da5ec8ac61bd9bd42005a46f01e6b06810e"
+          }
+        },
+        {
+          "client_id": "250627111694-fjlovvrgoec85k184bpm65cebk3no3f5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pistha.mothipaaru",
+            "certificate_hash": "3c78c99619bcb42be6ddc821c4504912726c7955"
           }
         },
         {
@@ -41,7 +57,8 @@
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-7392433179328561~9065864941"
     }
   ],
   "configuration_version": "1"

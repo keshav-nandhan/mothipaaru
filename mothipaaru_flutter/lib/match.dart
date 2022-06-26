@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mothipaaru_flutter/loading.dart';
-import 'package:mothipaaru_flutter/notifications.dart';
 import 'package:mothipaaru_flutter/userDetails.model.dart';
 import 'users.model.dart';
 
@@ -16,51 +16,80 @@ _MatchfinderState createState() => _MatchfinderState();
 }
 
 class _MatchfinderState extends State<Matchfinder> with TickerProviderStateMixin{
-
+InterstitialAd? _interstitialad;
 UserDetails? matchUser;
 late AnimationController _animationController;
 Animation? animation;
 
   double _containerPaddingLeft = 20.0;
   Animation? sizeAnimation;
+  
+  int adloadattempt=0;
 //static bool confirmmatch=false;
 // Declare this variable
 
 @override
 void initState() {
   super.initState();
-
+  initad();
 }
 
+void showInterstitialad(){
+  if(_interstitialad!=null){
+    _interstitialad?.fullScreenContentCallback=FullScreenContentCallback(
+      onAdDismissedFullScreenContent:(InterstitialAd ad)=>{ad.dispose(),initad()},
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad,AdError error) => {ad.dispose(),initad()},
+    );
+  }
+  _interstitialad?.show();
+}
 
+  void dispose() {
+    super.dispose();
+    _interstitialad?.dispose();
+  }
+
+
+void initad(){
+  InterstitialAd.load(adUnitId: "ca-app-pub-3940256099942544/1033173712", request: AdRequest(), adLoadCallback: InterstitialAdLoadCallback(
+   onAdLoaded: (InterstitialAd ad) {
+     _interstitialad=ad;
+     adloadattempt=0;
+   },
+   onAdFailedToLoad: (LoadAdError error)=>{print(error),adloadattempt+=1,_interstitialad=null,if(adloadattempt<3)initad()}));
+}
 
   @override
 Widget build(BuildContext context) {
 
  return Scaffold(
-  appBar: AppBar(title: Text('Opponents'),
-  actions: <Widget>[
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: TextButton(
-              onPressed: () async{
-              Navigator.push(context, MaterialPageRoute(
-              builder: (context) {
-                return NotificationsPage(currentUser:widget.userLoggedIn);                      
-                }));
-              },
-              child:  Icon(Icons.notifications),
-            ),
-          ),
-        ],
+  appBar: AppBar(title: Text('Opponents Found'),backgroundColor: Color.fromARGB(255, 15, 66, 61),
+  // actions: <Widget>[
+  //         Padding(
+  //           padding: EdgeInsets.all(8.0),
+  //           child: TextButton(
+  //             onPressed: () async{
+  //             Navigator.push(context, MaterialPageRoute(
+  //             builder: (context) {
+  //               return NotificationsPage(currentUser:widget.userLoggedIn);                      
+  //               }));
+  //             },
+  //             child:  Icon(Icons.notifications),
+  //           ),
+  //         ),
+  //       ],
   ),
   //child: new ListView.builder(itemBuilder:this.matchUser)
   body: FutureBuilder(
+    
       future: futureloaderdelay(),//it will return the future type result
             builder: (context, snapshot) {
-              
-              if(snapshot.connectionState == ConnectionState.done) {
+              showInterstitialad();
+              if(snapshot.connectionState == ConnectionState.done) 
                 return  databindUsers(context,widget.usersMatchData!);
+              if(snapshot.connectionState == ConnectionState.waiting)
+                {
+                  return Loading();
               }
               return Loading(); //show loading
             }),
@@ -279,20 +308,10 @@ _createListRow(UserDetails matchedUser,Users userLoggedIn) {
       }
 
                  futureloaderdelay() {
-            return Future.delayed(Duration(milliseconds: 3000),);
+                  
+            return Future.delayed(Duration(milliseconds: 2000),);
         }
 
 }
 
   
-
-
-
-class CreateListRow extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      
-    );
-  }
-}
