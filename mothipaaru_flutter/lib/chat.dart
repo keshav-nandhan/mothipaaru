@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mothipaaru_flutter/chatscreen.dart';
 import 'package:mothipaaru_flutter/loading.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
@@ -17,11 +18,12 @@ Chatwindow({Key? key,required this.currentUser}): super(key: key);
 class _ChatwindowState extends State<Chatwindow> {
 List<ChatRoomModel> chatrooms=[];
 List<ChatUsers> chatwithPeople=[];
-
+InterstitialAd? _interstitialad;
   static const kDefaultPadding=4.0;
-
+int adloadattempt=0;
 @override
 void initState(){
+  
   super.initState();
   List<ChatUsers> guystochat=[];
   FirebaseFirestore.instance.collection("chatroom").get().then((data) => {
@@ -31,7 +33,7 @@ void initState(){
             if(doc.data()["usercontact1"]==widget.currentUser.uid)
             {
               FirebaseFirestore.instance.collection("Users").doc(doc.data()['usercontact2']).get().then((element) {
-                ChatUsers people=new ChatUsers(element.data()!["displayName"],element.data()!["email"],element.data()!["photoURL"], element.data()!["uid"],doc.id);
+                ChatUsers people=new ChatUsers(element.data()?["displayName"],element.data()?["email"],element.data()?["photoURL"], element.data()?["uid"],doc.id);
                 guystochat.add(people);
                 }),
             } 
@@ -48,17 +50,38 @@ void initState(){
   }).then((value) => {
 setState(() {
         this.chatwithPeople=guystochat;
+        initad();
         })
 
   });
   
   }
+
+  void showInterstitialad(){
+  if(_interstitialad!=null){
+    _interstitialad?.fullScreenContentCallback=FullScreenContentCallback(
+      onAdDismissedFullScreenContent:(InterstitialAd ad)=>{ad.dispose(),initad()},
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad,AdError error) => {ad.dispose(),initad()},
+    );
+  }
+  _interstitialad?.show();
+}
   
    @override
     void dispose() {
       super.dispose();
+          _interstitialad?.dispose();
     }
   
+  void initad(){
+  InterstitialAd.load(adUnitId: "ca-app-pub-7392433179328561/4059352630", request: AdRequest(), adLoadCallback: InterstitialAdLoadCallback(
+   onAdLoaded: (InterstitialAd ad) {
+     _interstitialad=ad;
+     adloadattempt=0;
+   },
+   onAdFailedToLoad: (LoadAdError error)=>{print(error),adloadattempt+=1,_interstitialad=null,if(adloadattempt<3)initad()}));
+}
+
       @override
       Widget build(BuildContext context) {
       return Scaffold(
@@ -89,6 +112,7 @@ setState(() {
         
                  _chatroomListRow(ChatUsers matchreq) {
                 return Card(
+                  color: Colors.lightBlue[50],
                   elevation: 3,
                   clipBehavior: Clip.antiAlias,
                   margin: EdgeInsets.all(4.0),
@@ -107,6 +131,7 @@ setState(() {
                           contentPadding: EdgeInsets.all(5.0),
                           subtitle: Text(matchreq.displayName.toString()),
                           onTap: (){
+                            showInterstitialad();
                             Navigator.push(context, MaterialPageRoute(
                       builder: (context) {
                         return ChatScreenPage(chatroomID:matchreq.chatRoomID.toString(),currentUser:widget.currentUser,secondUser:matchreq.displayName);                      

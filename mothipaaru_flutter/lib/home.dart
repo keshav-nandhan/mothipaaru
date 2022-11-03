@@ -1,14 +1,12 @@
-
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mothipaaru_flutter/match.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mothipaaru_flutter/userDetails.model.dart';
-import 'users.model.dart';
 class HomePage extends StatefulWidget {
 
 final Users userLoggedIn;
@@ -28,27 +26,105 @@ Position? _currentPosition;
 LocationPermission?  grantpermission;
 UserDetails? matchUser;
 final _formKey = GlobalKey<FormState>();
-
+InterstitialAd? _interstitialad;
+int adloadattempt=0;
 // Declare this variable
 int? selectedRadio;
-String? _myActivity="";
+String? _myActivity="",categoryval="";
 String? _genderValue="Male";
-int _selectedIndex = 0;
 TextEditingController mobileNumberController = TextEditingController();
 TextEditingController commentsController = TextEditingController();
 bool searchusers=true;
 
 List<UserDetails> matchedUsers=[];
 
-var dropdownkey;
+List<String> submenuitems=<String>[];
+      final category=[
+          {"key":"Indoor","items":[{
+          "Carrom",
+          "Chess",
+          "Snooker",
+          "Cards",
+          }]},
+          {"key":"Outdoor","items":[{  "Football",
+          "Basketball",
+          "Cricket",
+          "Volleyball",
+          "Badminton"
+          }]},
+          {"key":"ESports","items":[{"BGMI",
+          "Ludo",
+          "Apex Legends",
+          "COD",}]}
+     ];
+     
+     final List<String> OutdoorItems=<String>[
+          "Football",
+          "Basketball",
+          "Cricket",
+          "Volleyball",
+          "Badminton"
+     ];
+
+
+     final List<String> indoorItems=<String>[
+          "Carrom",
+          "Chess",
+          "Snooker",
+          "Cards",
+     ];
+     
+     final List<String> eSportsItems=<String>[
+          "BGMI",
+          "Ludo",
+          "Apex Legends",
+          "COD",
+     ];
+
+
+void showInterstitialad(){
+  if(_interstitialad!=null){
+    _interstitialad?.fullScreenContentCallback=FullScreenContentCallback(
+      onAdDismissedFullScreenContent:(InterstitialAd ad)=>{ad.dispose(),initad()},
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad,AdError error) => {ad.dispose(),initad()},
+    );
+  }
+  _interstitialad?.show();
+}
+  
+
+void initad(){
+InterstitialAd.load(adUnitId: "ca-app-pub-7392433179328561/4059352630", request: AdRequest(), adLoadCallback: InterstitialAdLoadCallback(
+  onAdLoaded: (InterstitialAd ad) {
+    _interstitialad=ad;
+    adloadattempt=0;
+  },
+  onAdFailedToLoad: (LoadAdError error)=>{print(error),adloadattempt+=1,_interstitialad=null,if(adloadattempt<3)initad()}));
+}
+
 @override
 void initState() {
   super.initState();
-  generatetoken();
   selectedRadio = 0;
+  getFormData();
+  initad();
 }
-  void dispose() {
-    super.dispose();
+
+getFormData(){
+  setState(() {
+    FirebaseFirestore.instance.collection("register_team").doc(widget.userLoggedIn.uid).snapshots().listen((event) {
+      if(event.exists){
+        mobileNumberController.text=event.data()!['phonenumber'];
+        commentsController.text=event.data()!['descyourself'];
+        _genderValue=event.data()!['gender'];
+        _myActivity=event.data()!['favouritesport'];
+      }
+    });
+  });
+}
+void dispose() {
+super.dispose();
+  _interstitialad?.dispose();
   }
 
  setSelectedRadioTile(String? val) {
@@ -56,15 +132,7 @@ void initState() {
       _genderValue = val;
     });
   }
-generatetoken() async{
-  //FirebaseMessaging.instance.getInitialMessage();
-  FirebaseMessaging.onMessage.listen((message) { 
-    print(message.notification?.body);
-    print(message.notification?.title);
-  });
- FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(alert: true,badge: true,sound: true);
- 
-    }
+
 
  
  final _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -75,13 +143,6 @@ generatetoken() async{
   
   final Users currentUser=widget.userLoggedIn;
 
-     final List<String> items=<String>[
-          "Football",
-          "Basketball",
-          "Cricket",
-          "Voleyball",
-          "Badminton"
-     ];
      return WillPopScope(
        onWillPop: _willConfirmExit,
        
@@ -135,7 +196,7 @@ TextFormField(
      contentPadding: EdgeInsets.all(10.0),
      filled: true,
      fillColor: Colors.black12,
-     labelText: 'Enter Comments like desc ground/yourself'
+     labelText: 'About yourself'
    ),
    // The validator receives the text that the user has entered.
    validator: (value) {
@@ -172,10 +233,21 @@ TextFormField(
     selected: false,
   ),],)
  ),
+//  DropdownButton(
+//     value : category.isNotEmpty? categoryval : "", 
+//     icon: const Icon(Icons.keyboard_arrow_down),      
+//     items:category.map((item) {
+//                 return DropdownMenuItem(
+//                   value: item.values,
+//                   child: Text(item.values.first.toString()),
+//                 );
+//               }).toList(),
+//               onChanged: (value) => {},
+//    ),
   DropdownButton(
-    value : _myActivity!.isNotEmpty? _myActivity : items[0], 
+    value : _myActivity!.isNotEmpty? _myActivity : OutdoorItems[0], 
     icon: const Icon(Icons.keyboard_arrow_down),      
-    items:items.map((item) {
+    items:OutdoorItems.map((item) {
                 return DropdownMenuItem(
                   value: item,
                   child: Text(item),
@@ -207,10 +279,11 @@ TextFormField(
 
        Future.delayed(Duration(milliseconds: 500)).then((value) => {
        
-       matchedUsers=setfollowers(matchedUsers,following),
+       matchedUsers=setfollowersandrating(matchedUsers,following),
 
        if(matchedUsers.length>0)
        {
+        showInterstitialad(),
          Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
                 return Matchfinder(userLoggedIn:currentUser,usersMatchData:matchedUsers);                      
@@ -238,8 +311,7 @@ TextFormField(
    
     },
        child: Text('Search'),
-       style: ElevatedButton.styleFrom(
-          primary: Color.fromARGB(255, 15, 66, 61),
+       style: ElevatedButton.styleFrom(backgroundColor: Color.fromARGB(255, 15, 66, 61),
        ),
   ),
  
@@ -261,7 +333,7 @@ TextFormField(
             //GeolocationStatus locationpermissionstatus=await geolocator.checkGeolocationPermissionStatus();
             bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
             if (!serviceEnabled) {
-    
+              
               return Future.error('Location services are disabled.');
             }
 
@@ -292,7 +364,7 @@ TextFormField(
                   'phonenumber':mobilenumber,
                   'favouritesport':sport,
                   'citylocation':cityLocation,
-                  'descground':desccomments,
+                  'descyourself':desccomments,
                   'imageurl':userLoggedIn.photoURL,
                   'mailaddress':userLoggedIn.email,
                   'username':userLoggedIn.displayName,
@@ -304,7 +376,7 @@ TextFormField(
                 if(doc['uid']!=userLoggedIn.uid)
                 {
                     nearbyplayer =distancebetweenplayers(doc['citylocation'].toString(),cityLocation),
-                    opponentsfound=new UserDetails(doc['uid'], doc['citylocation'], DateTime.now().toString(), doc['descground'], doc['favouritesport'], doc['gender'], doc['imageurl'], doc['mailaddress'], doc['phonenumber'], doc['username'],nearbyplayer,doc['isUseravailable'],0,false),
+                    opponentsfound=new UserDetails(doc['uid'], doc['citylocation'], DateTime.now().toString(), doc['descyourself'], doc['favouritesport'], doc['gender'], doc['imageurl'], doc['mailaddress'], doc['phonenumber'], doc['username'],nearbyplayer,doc['isUseravailable'],0,false,0,0,0),
                     listDataSource.add(opponentsfound),
                 }
                 
@@ -325,8 +397,10 @@ TextFormField(
               //Lat: 37.4219983, Long: -122.084
               result=result/1000;
               //double result=calculateDistance(double.parse(opponentlocation.split(',')[0].split(':')[1].trim()),double.parse(opponentlocation.split(',')[1].split(':')[1].trim()),double.parse(usercityLocation.split(',')[0].split(':')[1].trim()),double.parse(usercityLocation.split(',')[1].split(':')[1].trim()));
-              return result.toStringAsFixed(2).toString()+" km";
+              //return result.toStringAsFixed(2).toString()+" km";
+              return result;
               }
+              
               
   showAlertDialog(BuildContext context) {
     Widget okButton = TextButton(  
@@ -362,8 +436,10 @@ showLocationDialog(BuildContext context) {
   );  
   
   // Create AlertDialog  
+  
   AlertDialog alert = AlertDialog(  
     title: Text("Location Settings"),  
+
     content: Text("Please enable location and try again"),
     actions: [  
       okButton,  
@@ -401,18 +477,33 @@ Future<bool> _willConfirmExit() async {
             // return true if the route to be popped
 }
 
-  setfollowers(List<UserDetails> matchedUsers, Stream<QuerySnapshot<Map<String, dynamic>>> following) {
-
-
-
+  setfollowersandrating(List<UserDetails> matchedUsers, Stream<QuerySnapshot<Map<String, dynamic>>> following) {
     for(int i=0;i<matchedUsers.length;i++){
-
       FirebaseFirestore.instance.collection("Users").doc(matchedUsers[i].uid).collection("FollowedBy").snapshots().listen((value) =>{ 
-     matchedUsers[i].totalfollowers= value.docs.length
-     });
+     matchedUsers[i].totalfollowers= value.docs.length,
+    FirebaseFirestore.instance.collection("Users").doc(matchedUsers[i].uid).collection("rating").doc(matchedUsers[i].uid).snapshots().listen((value) =>{ 
+     if(value.exists){
+        matchedUsers[i].rating= value.data()!['rating']/value.data()!['matches']
+     }
+     else{
+      matchedUsers[i].rating= 0
+     }
+     }),
+     FirebaseFirestore.instance.collection("Users").doc(matchedUsers[i].uid).collection("WinsLosses").doc(matchedUsers[i].uid).snapshots().listen((value) =>{ 
+     if(value.exists){
+        matchedUsers[i].Wins= value.data()!['Wins'],
+        matchedUsers[i].Losses= value.data()!['Losses'],
+     }
+     else{
+      matchedUsers[i].Wins= 0,
+      matchedUsers[i].Losses= 0
+     }
+     })
+     
 
+     });
       following.listen((event) =>{
-  for (var item in event.docs) {
+    for (var item in event.docs) {
     if(matchedUsers[i].uid==item.id)
     {
       matchedUsers[i].isfollowing=true
@@ -422,6 +513,8 @@ Future<bool> _willConfirmExit() async {
     }
     return matchedUsers;
   }
+  
+   
 
 
 }

@@ -1,5 +1,3 @@
-
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -30,7 +28,7 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
  }
 
  class _LoginPageState extends State<LoginPage> {
-
+//var _url = Uri.parse('https://www.youtube.com/channel/UCSyqHabaBeFVHgCjpKEDlUg');
   void setMessage(String message) {
     setState(() {
     });
@@ -105,12 +103,6 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
         final GoogleAuthCredential googleAuthCredential =GoogleAuthProvider.credential(accessToken: googleAuth.accessToken,idToken: googleAuth.idToken) as GoogleAuthCredential;
         userCredential = await _auth.signInWithCredential(googleAuthCredential);
 
-
-        //final obj = await GoogleSignIn().authenticatedClient();
-        // final GoogleSignInAuthentication googleAuth =await googleUser.authentication;
-        
-        // final GoogleAuthCredential googleAuthCredential =GoogleAuthProvider.credential(accessToken: googleAuth.accessToken,idToken: googleAuth.idToken,);
-        //userCredential = await _auth.signInWithCredential(googleAuthCredential);
       }
       
       final Users currentuser= new Users(userCredential.user!.displayName, userCredential.user!.email, userCredential.user!.photoURL, userCredential.user!.uid);
@@ -119,7 +111,7 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
                   },SetOptions(merge:true));
               Navigator.push(context, MaterialPageRoute(
               builder: (context) {
-                return FirstPage(userLoggedIn:currentuser);                      
+                return FirstPage(userLoggedIn:currentuser,tabIndex: 0,);                      
                 }));
 
 } on FirebaseAuthException catch (e) {
@@ -140,7 +132,10 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
           children: [
             Text("Sign In With Google")
           ],
-        )
+        ),
+        // Center(child: GestureDetector(child: Container(height: 30,width: 30, child: Image.network("https://www.shareicon.net/data/512x512/2016/07/10/119962_youtube_512x512.png")),onTap:() async{
+          
+        // }),)
       ],
     ),
       ),

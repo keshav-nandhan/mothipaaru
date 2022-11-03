@@ -4,11 +4,12 @@ class NotificationModel{
   final String? sport;
   final bool? confirmed;
   final bool? isMatchover;
+  final String? finalwinner;
   final String? dateupdated;
   final String? matchrequestedbyUser;
   final String? matchrequestedagainstUser;
   final String? matchrequestedbyPhoto;
   final String? matchrequestedagainstPhoto;
   final String docid;
-NotificationModel(this.matchrequestedagainst,this.matchrequestedby,this.sport,this.isMatchover,this.confirmed,this.dateupdated,this.matchrequestedbyUser,this.matchrequestedagainstUser,this.matchrequestedbyPhoto,this.matchrequestedagainstPhoto,this.docid);
+NotificationModel(this.matchrequestedagainst,this.matchrequestedby,this.sport,this.isMatchover,this.finalwinner,this.confirmed,this.dateupdated,this.matchrequestedbyUser,this.matchrequestedagainstUser,this.matchrequestedbyPhoto,this.matchrequestedagainstPhoto,this.docid);
 }

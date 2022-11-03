@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/services.dart';
-import 'ad_state.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'login.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
@@ -12,10 +12,12 @@ Future<void> main() async {
 
   await runZonedGuarded(() async {
   WidgetsFlutterBinding.ensureInitialized();
-    final initfuture =MobileAds.instance.initialize();
+  //final initfuture =MobileAds.instance.initialize();
   await Firebase.initializeApp();
   
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  FlutterError.onError = (details){
+    FirebaseCrashlytics.instance.recordFlutterError(details);
+  };
   runApp(MyApp());
   }
   ,(error, stackTrace) {
@@ -42,6 +44,9 @@ class MyApp extends StatelessWidget {
       title: 'Mothipaaru',
      
       theme: ThemeData(
+         textTheme: GoogleFonts.anekLatinTextTheme(
+          Theme.of(context).textTheme,
+        ),
         // This is the theme of your application.
         //
         // Try running your application with "flutter run". You'll see the
@@ -63,6 +68,7 @@ class MyApp extends StatelessWidget {
       analytics: analytics,
       observer: observer,
       ),
+      builder: EasyLoading.init(),
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:mothipaaru_flutter/chat.dart';
+import 'package:mothipaaru_flutter/first.dart';
 import 'package:mothipaaru_flutter/loading.dart';
 import 'package:mothipaaru_flutter/notification.model.dart';
 import 'package:mothipaaru_flutter/users.model.dart';
@@ -26,15 +27,15 @@ void initState() {
  listscrollcontroller.addListener(_scrollListener);
    super.initState();
   var notify;List<NotificationModel> matchesrequested=[];
-  FirebaseFirestore.instance.collection("register_match").where('matchrequestedagainst',isEqualTo: widget.currentUser.uid).snapshots().listen((data) {
+  FirebaseFirestore.instance.collection("register_match").where('matchrequestedagainst',isEqualTo: widget.currentUser.uid).orderBy("dateupdated",descending: true).snapshots().listen((data) {
         data.docs.forEach((doc) =>{
-          notify=new NotificationModel(doc.data()['matchrequestedagainst'],doc.data()['matchrequestedby'],doc.data()['sport'],doc.data()['isMatchover'],doc.data()['confirmed'],doc.data()['dateupdated'],doc.data()['matchrequestedbyUser'],doc.data()['matchrequestedagainstUser'],doc.data()['matchrequestedbyPhoto'],doc.data()['matchrequestedagainstPhoto'],doc.id),
+          notify=new NotificationModel(doc.data()['matchrequestedagainst'],doc.data()['matchrequestedby'],doc.data()['sport'],doc.data()['isMatchover'],doc.data()["finalwinner"]!,doc.data()['confirmed'],doc.data()['dateupdated'],doc.data()['matchrequestedbyUser'],doc.data()['matchrequestedagainstUser'],doc.data()['matchrequestedbyPhoto'],doc.data()['matchrequestedagainstPhoto'],doc.id),
           matchesrequested.add(notify),
         });
    });
-   FirebaseFirestore.instance.collection("register_match").where('matchrequestedby',isEqualTo: widget.currentUser.uid).snapshots().listen((data) {
+   FirebaseFirestore.instance.collection("register_match").where('matchrequestedby',isEqualTo: widget.currentUser.uid).orderBy("dateupdated",descending: true).snapshots().listen((data) {
         data.docs.forEach((doc) =>{
-          notify=new NotificationModel(doc.data()['matchrequestedagainst'],doc.data()['matchrequestedby'],doc.data()['sport'],doc.data()['isMatchover'],doc.data()['confirmed'],doc.data()['dateupdated'],doc.data()['matchrequestedbyUser'],doc.data()['matchrequestedagainstUser'],doc.data()['matchrequestedbyPhoto'],doc.data()['matchrequestedagainstPhoto'],doc.id),
+          notify=new NotificationModel(doc.data()['matchrequestedagainst'],doc.data()['matchrequestedby'],doc.data()['sport'],doc.data()['isMatchover'],doc.data()["finalwinner"]!,doc.data()['confirmed'],doc.data()['dateupdated'],doc.data()['matchrequestedbyUser'],doc.data()['matchrequestedagainstUser'],doc.data()['matchrequestedbyPhoto'],doc.data()['matchrequestedagainstPhoto'],doc.id),
           matchesrequested.add(notify),
         });
    });
@@ -202,14 +203,14 @@ _scrollListener() {
                                                         },SetOptions(merge: true)).then((value) => {
                                                           Navigator.push(context, MaterialPageRoute(
                                         builder: (context) {
-                                          return Chatwindow(currentUser:widget.currentUser);                      
+                                          return FirstPage(userLoggedIn:widget.currentUser,tabIndex: 1,);                      
                                           })) 
                                                         })
                             }
                             else{
                                                            Navigator.pushReplacement(context, MaterialPageRoute(
                                         builder: (context) {
-                                          return NotificationsPage(currentUser:widget.currentUser);                      
+                                          return FirstPage(userLoggedIn:widget.currentUser,tabIndex: 2);                      
                                           })) 
                             }
                             });
@@ -233,6 +234,8 @@ _scrollListener() {
           }
           else{
               return new Card( 
+                color: Colors.lightBlue[50],
+                shadowColor: Colors.lightBlue[300],
                 elevation: 2,
           clipBehavior: Clip.hardEdge,
           margin: EdgeInsets.all(5.0),
@@ -240,7 +243,7 @@ _scrollListener() {
                 padding: EdgeInsets.all(4.0),
                 child:ListTile(
                  leading: CircleAvatar(
-                   radius: 25.0,
+                   radius: 30.0,
                    backgroundImage:NetworkImage(matchreq.matchrequestedbyPhoto.toString()),
                    backgroundColor: Colors.transparent),
 
@@ -256,6 +259,8 @@ _scrollListener() {
         else if(matchreq.matchrequestedby==widget.currentUser.uid){
           if(!matchreq.confirmed!){
       return new Card( 
+        color: Colors.lightBlue[50],
+                shadowColor: Colors.lightBlue[300],
                 elevation: 2,
           clipBehavior: Clip.hardEdge,
           margin: EdgeInsets.all(5.0),
@@ -277,6 +282,8 @@ _scrollListener() {
           else
           {
          return new Card( 
+          color: Colors.lightBlue[50],
+                shadowColor: Colors.lightBlue[300],
                 elevation: 2,
           clipBehavior: Clip.hardEdge,
           margin: EdgeInsets.all(5.0),
@@ -298,15 +305,17 @@ _scrollListener() {
         }
         else{
          return new Card( 
+                color: Colors.lightBlue[50],
+                shadowColor: Colors.lightBlue[300],
                 elevation: 2,
           clipBehavior: Clip.hardEdge,
           margin: EdgeInsets.all(5.0),
                 child:Padding(
-                padding: EdgeInsets.all(4.0),
-                child:ListTile(
+                  padding:EdgeInsets.all(5),
+            child:ListTile(
           //leading: CircleAvatar(radius: 30.0,backgroundImage:NetworkImage(matchedUser.imageurl.toString()),backgroundColor: Colors.transparent),
           contentPadding: EdgeInsets.all(5.0),
-          subtitle: Text("No New Pending Notifications" ,style: TextStyle(color: Colors.black.withOpacity(0.6)),)
+          subtitle: Text("No New Pending Notifications" ,style: GoogleFonts.lato(textStyle:TextStyle(color: Colors.black.withOpacity(0.6)),))
         ),
       ),
          );
